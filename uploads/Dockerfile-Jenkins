@@ -1,0 +1,15 @@
+FROM jenkins/jenkins:latest
+USER root
+# 更换 apt-get 安装源
+RUN mv /etc/apt/sources.list /etc/apt/sources.list.backup
+COPY sources.list /etc/apt/
+# 解决 Load statistics 中文显示方块问题
+COPY msyh.ttf /usr/local/share/fonts
+# 安装软件、更新字体缓存、更改时区
+RUN apt-get update \
+    && apt-get install -y rsync man-db mysql-client jq \
+    && curl https://rclone.org/install.sh | bash \
+    && fc-cache -fv \
+    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && dpkg-reconfigure -f noninteractive tzdata
+USER jenkins

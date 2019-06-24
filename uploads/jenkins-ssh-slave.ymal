@@ -1,0 +1,12 @@
+version: "3.5"
+services:
+  jenkins-ssh-slave:
+    image: repo.yeadoc.cn/jenkins:ssh-slave
+    privileged: true
+    #build: .
+    command: setup-sshd 'SSH 公钥'
+    restart: always
+    network_mode: "host"
+    volumes:
+      - /data/app/jenkins:/var/jenkins_home
+    container_name: jenkins-ssh-slave
