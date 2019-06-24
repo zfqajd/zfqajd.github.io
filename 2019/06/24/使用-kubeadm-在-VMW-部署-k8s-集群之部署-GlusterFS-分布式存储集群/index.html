@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="经过前一篇文章的设置，我们已经配置好基础环境，现在可以来搭建GlusterFS分布式集群，用来做k8s存储。">
+<meta name="keywords" content="k8s,gluster,heketi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 kubeadm 在 VMW 部署 k8s 集群之部署 GlusterFS 分布式存储集群">
+<meta property="og:url" content="https://yeadoc.cn/2019/06/24/使用-kubeadm-在-VMW-部署-k8s-集群之部署-GlusterFS-分布式存储集群/index.html">
+<meta property="og:site_name" content="Yeadoc">
+<meta property="og:description" content="经过前一篇文章的设置，我们已经配置好基础环境，现在可以来搭建GlusterFS分布式集群，用来做k8s存储。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-06-24T07:11:30.633Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用 kubeadm 在 VMW 部署 k8s 集群之部署 GlusterFS 分布式存储集群">
+<meta name="twitter:description" content="经过前一篇文章的设置，我们已经配置好基础环境，现在可以来搭建GlusterFS分布式集群，用来做k8s存储。">
+
+
+
+
+
+
+  <link rel="canonical" href="https://yeadoc.cn/2019/06/24/使用-kubeadm-在-VMW-部署-k8s-集群之部署-GlusterFS-分布式存储集群/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>使用 kubeadm 在 VMW 部署 k8s 集群之部署 GlusterFS 分布式存储集群 | Yeadoc</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yeadoc</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">亿文-一位运维工程师的文档库</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>About</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yeadoc.cn/2019/06/24/使用-kubeadm-在-VMW-部署-k8s-集群之部署-GlusterFS-分布式存储集群/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Darren">
+      <meta itemprop="description" content="运维工作中遇到的问题总结，新知识的记录。">
+      <meta itemprop="image" content="/uploads/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yeadoc">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用 kubeadm 在 VMW 部署 k8s 集群之部署 GlusterFS 分布式存储集群
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-06-24 15:09:22 / Modified: 15:11:30" itemprop="dateCreated datePublished" datetime="2019-06-24T15:09:22+08:00">2019-06-24</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/k8s/" itemprop="url" rel="index"><span itemprop="name">k8s</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>经过前一篇文章的设置，我们已经配置好基础环境，现在可以来搭建<code>GlusterFS</code>分布式集群，用来做<code>k8s</code>存储。<a id="more"></a></p>
+<blockquote>
+<p>以下操作没有特殊说明的，即在所有节点上执行</p>
+</blockquote>
+<h2 id="GlusterFS-安装部署"><a href="#GlusterFS-安装部署" class="headerlink" title="GlusterFS 安装部署"></a>GlusterFS 安装部署</h2><h3 id="安装-glusterfs"><a href="#安装-glusterfs" class="headerlink" title="安装 glusterfs"></a>安装 glusterfs</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum -y install centos-release-gluster</span><br><span class="line">yum -y install glusterfs-server</span><br></pre></td></tr></table></figure>
+<h3 id="启用-glusterd-服务"><a href="#启用-glusterd-服务" class="headerlink" title="启用 glusterd 服务"></a>启用 glusterd 服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable glusterd</span><br><span class="line">systemctl start glusterd</span><br></pre></td></tr></table></figure>
+<h3 id="配置信任池（在k8s-master上操作）"><a href="#配置信任池（在k8s-master上操作）" class="headerlink" title="配置信任池（在k8s-master上操作）"></a>配置信任池（在<code>k8s-master</code>上操作）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">gluster peer probe 192.168.1.71</span><br><span class="line">gluster peer probe 192.168.1.72</span><br><span class="line"># 查看状态</span><br><span class="line">gluster peer status</span><br></pre></td></tr></table></figure>
+<h3 id="创建挂载目录"><a href="#创建挂载目录" class="headerlink" title="创建挂载目录"></a>创建挂载目录</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /data/glusterfs/gv0/brick1</span><br></pre></td></tr></table></figure>
+<h3 id="创建测试卷（在k8s-master上操作）"><a href="#创建测试卷（在k8s-master上操作）" class="headerlink" title="创建测试卷（在k8s-master上操作）"></a>创建测试卷（在<code>k8s-master</code>上操作）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 创建卷gv0</span><br><span class="line">gluster volume create gv0 replica 3 192.168.1.70:/data/glusterfs/gv0/brick1 192.168.1.71:/data/glusterfs/gv0/brick1 192.168.1.72:/data/glusterfs/gv0/brick1</span><br><span class="line"># 激活卷</span><br><span class="line">gluster volume start gv0</span><br><span class="line"># 查看卷信息</span><br><span class="line">gluster volume info</span><br></pre></td></tr></table></figure>
+<h3 id="挂载测试"><a href="#挂载测试" class="headerlink" title="挂载测试"></a>挂载测试</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount -t glusterfs 192.168.1.70:/gv0 /mnt/glusterfs</span><br></pre></td></tr></table></figure>
+<h3 id="删除测试卷（在k8s-master上操作）"><a href="#删除测试卷（在k8s-master上操作）" class="headerlink" title="删除测试卷（在k8s-master上操作）"></a>删除测试卷（在<code>k8s-master</code>上操作）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gluster volume stop gv0</span><br><span class="line">gluster volume delete gv0</span><br></pre></td></tr></table></figure>
+<h2 id="Heketi-Server-安装部署"><a href="#Heketi-Server-安装部署" class="headerlink" title="Heketi Server 安装部署"></a>Heketi Server 安装部署</h2><p>关于<code>Heketi</code>的官网释义</p>
+<blockquote>
+<p>Heketi provides a RESTful management interface which can be used to manage the life cycle of GlusterFS volumes. With Heketi, cloud services like OpenStack Manila, Kubernetes, and OpenShift can dynamically provision GlusterFS volumes with any of the supported durability types. Heketi will automatically determine the location for bricks across the cluster, making sure to place bricks and its replicas across different failure domains. Heketi also supports any number of GlusterFS clusters, allowing cloud services to provide network file storage without being limited to a single GlusterFS cluster.</p>
+</blockquote>
+<p><code>Heketi</code>提供一个<code>RESTful</code>管理界面，可用于管理<code>GlusterFS</code>存储卷的生命周期。通过<code>Heketi</code>，就可以让<code>k8s</code>动态配置<code>GlusterFS</code>存储卷。</p>
+<blockquote>
+<p>以下操作在<code>k8s-master</code>上执行</p>
+</blockquote>
+<h3 id="安装-Heketi"><a href="#安装-Heketi" class="headerlink" title="安装 Heketi"></a>安装 Heketi</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install heketi heketi-client</span><br></pre></td></tr></table></figure>
+<h3 id="配置-heketi-json"><a href="#配置-heketi-json" class="headerlink" title="配置 heketi.json"></a>配置 heketi.json</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/heketi/heketi.json</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">......</span><br><span class="line"># 修改端口，防止端口冲突</span><br><span class="line">  &quot;port&quot;: &quot;18080&quot;,</span><br><span class="line">......</span><br><span class="line"># 允许认证</span><br><span class="line">  &quot;use_auth&quot;: true,</span><br><span class="line">......</span><br><span class="line"># 设置 admin 用户 key</span><br><span class="line">    &quot;admin&quot;: &#123;</span><br><span class="line">      &quot;key&quot;: &quot;adminkey&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">......</span><br><span class="line"># 修改执行插件为 ssh，并配置ssh所需证书，以实现对集群中的机器免密ssh登陆，使用ssh-copy-id把公钥copy到每台glusterfs服务器上</span><br><span class="line">    &quot;executor&quot;: &quot;ssh&quot;,</span><br><span class="line"></span><br><span class="line">    &quot;_sshexec_comment&quot;: &quot;SSH username and private key file information&quot;,</span><br><span class="line">    &quot;sshexec&quot;: &#123;</span><br><span class="line">      &quot;keyfile&quot;: &quot;/etc/heketi/heketi_key&quot;,</span><br><span class="line">      &quot;user&quot;: &quot;root&quot;,</span><br><span class="line">      &quot;port&quot;: &quot;22&quot;,</span><br><span class="line">      &quot;fstab&quot;: &quot;/etc/fstab&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">......</span><br><span class="line"># 定义heketi数据库文件公交车</span><br><span class="line">    &quot;db&quot;: &quot;/var/lib/heketi/heketi.db&quot;,</span><br><span class="line">......</span><br><span class="line"># 日志输出级别</span><br><span class="line">    &quot;loglevel&quot; : &quot;warning&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="创建-SSH-密钥"><a href="#创建-SSH-密钥" class="headerlink" title="创建 SSH 密钥"></a>创建 SSH 密钥</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -q -f /etc/heketi/heketi_key -N &apos;&apos;</span><br><span class="line">chown -R heketi:heketi /etc/heketi</span><br><span class="line"># 拷贝公钥到每台节点上</span><br><span class="line">ssh-copy-id -i /etc/heketi/heketi_key.pub root@192.168.1.70</span><br><span class="line">ssh-copy-id -i /etc/heketi/heketi_key.pub root@192.168.1.71</span><br><span class="line">ssh-copy-id -i /etc/heketi/heketi_key.pub root@192.168.1.72</span><br></pre></td></tr></table></figure>
+<h3 id="启用-heketi-服务"><a href="#启用-heketi-服务" class="headerlink" title="启用 heketi 服务"></a>启用 heketi 服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable heketi</span><br><span class="line">systemctl start heketi</span><br></pre></td></tr></table></figure>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl http://localhost:18080/hello</span><br><span class="line"># 显示以下信息代表安装成功</span><br><span class="line">Hello from Heketi</span><br></pre></td></tr></table></figure>
+<h3 id="设置拓扑"><a href="#设置拓扑" class="headerlink" title="设置拓扑"></a>设置拓扑</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/heketi/topology.json</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"># 这边的`devices`用的是第二块磁盘`/dev/sdb`，磁盘必须是原始格式，没有格式化过。</span><br><span class="line">&#123;</span><br><span class="line">    &quot;clusters&quot;: [</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;nodes&quot;: [</span><br><span class="line">                &#123;</span><br><span class="line">                    &quot;devices&quot;: [</span><br><span class="line">                        &#123;</span><br><span class="line">                            &quot;destroydata&quot;: false,</span><br><span class="line">                            &quot;name&quot;: &quot;/dev/sdb&quot;</span><br><span class="line">                        &#125;</span><br><span class="line">                    ],</span><br><span class="line">                    &quot;node&quot;: &#123;</span><br><span class="line">                        &quot;hostnames&quot;: &#123;</span><br><span class="line">                            &quot;manage&quot;: [</span><br><span class="line">                                &quot;192.168.1.70&quot;</span><br><span class="line">                            ],</span><br><span class="line">                            &quot;storage&quot;: [</span><br><span class="line">                                &quot;192.168.1.70&quot;</span><br><span class="line">                            ]</span><br><span class="line">                        &#125;,</span><br><span class="line">                        &quot;zone&quot;: 1</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;,</span><br><span class="line">                &#123;</span><br><span class="line">                    &quot;devices&quot;: [</span><br><span class="line">                        &#123;</span><br><span class="line">                            &quot;destroydata&quot;: false,</span><br><span class="line">                            &quot;name&quot;: &quot;/dev/sdb&quot;</span><br><span class="line">                        &#125;</span><br><span class="line">                    ],</span><br><span class="line">                    &quot;node&quot;: &#123;</span><br><span class="line">                        &quot;hostnames&quot;: &#123;</span><br><span class="line">                            &quot;manage&quot;: [</span><br><span class="line">                                &quot;192.168.1.71&quot;</span><br><span class="line">                            ],</span><br><span class="line">                            &quot;storage&quot;: [</span><br><span class="line">                                &quot;192.168.1.71&quot;</span><br><span class="line">                            ]</span><br><span class="line">                        &#125;,</span><br><span class="line">                        &quot;zone&quot;: 1</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;,</span><br><span class="line">                &#123;</span><br><span class="line">                    &quot;devices&quot;: [</span><br><span class="line">                        &#123;</span><br><span class="line">                            &quot;destroydata&quot;: false,</span><br><span class="line">                            &quot;name&quot;: &quot;/dev/sdb&quot;</span><br><span class="line">                        &#125;</span><br><span class="line">                    ],</span><br><span class="line">                    &quot;node&quot;: &#123;</span><br><span class="line">                        &quot;hostnames&quot;: &#123;</span><br><span class="line">                            &quot;manage&quot;: [</span><br><span class="line">                                &quot;192.168.1.72&quot;</span><br><span class="line">                            ],</span><br><span class="line">                            &quot;storage&quot;: [</span><br><span class="line">                                &quot;192.168.1.72&quot;</span><br><span class="line">                            ]</span><br><span class="line">                        &#125;,</span><br><span class="line">                        &quot;zone&quot;: 1</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            ]</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">alias heketi-cli=&quot;heketi-cli --user admin --secret adminkey --server http://192.168.1.70&quot;</span><br><span class="line">heketi-cli topology load --json=/etc/heketi/topology.json</span><br><span class="line"># 验证是否加载成功</span><br><span class="line">heketi-cli topology info</span><br></pre></td></tr></table></figure>
+<h3 id="设置拓扑（另一种方式）"><a href="#设置拓扑（另一种方式）" class="headerlink" title="设置拓扑（另一种方式）"></a>设置拓扑（另一种方式）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 设置别名</span><br><span class="line">alias heketi-cli=&quot;heketi-cli --user admin --secret adminkey --server http://192.168.1.70&quot;</span><br><span class="line"># 创建 cluster</span><br><span class="line">heketi-cli cluster create</span><br><span class="line"># 添加节点到 cluster</span><br><span class="line">heketi-cli node add --cluster &quot;cluster id&quot; --management-host-name 节点ip --storage-host-name 节点ip --zone 1</span><br><span class="line"># 添加 device</span><br><span class="line">heketi-cli device add --name &quot;/dev/sdb&quot; --node &quot;node id&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="创建卷"><a href="#创建卷" class="headerlink" title="创建卷"></a>创建卷</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># size 是以 GiB 为单位</span><br><span class="line">heketi-cli volume create --size=3</span><br><span class="line"># 查看卷列表</span><br><span class="line">heketi-cli volume list</span><br></pre></td></tr></table></figure>
+<p>到此，我们已经把<code>GlusterFS</code>分布式存储给部署好了，下一篇将讲如何使用<code>kubeadm</code>部署<code>k8s</code>集群。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>一分、两分都是爱！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>Donate</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/wechatpay.jpg" alt="Darren WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+    
+
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
+          
+            <a href="/tags/gluster/" rel="tag"># gluster</a>
+          
+            <a href="/tags/heketi/" rel="tag"># heketi</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/24/使用-kubeadm-在-VMW-部署-k8s-集群之基础环境配置/" rel="next" title="使用 kubeadm 在 VMW 部署 k8s 集群之基础环境配置">
+                <i class="fa fa-chevron-left"></i> 使用 kubeadm 在 VMW 部署 k8s 集群之基础环境配置
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/avatar.jpeg" alt="Darren">
+            
+              <p class="site-author-name" itemprop="name">Darren</p>
+              <p class="site-description motion-element" itemprop="description">运维工作中遇到的问题总结，新知识的记录。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">29</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/zfqajd" title="GitHub &rarr; https://github.com/zfqajd" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:zfqajd@gmail.com" title="E-Mail &rarr; mailto:zfqajd@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#GlusterFS-安装部署"><span class="nav-number">1.</span> <span class="nav-text">GlusterFS 安装部署</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-glusterfs"><span class="nav-number">1.1.</span> <span class="nav-text">安装 glusterfs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启用-glusterd-服务"><span class="nav-number">1.2.</span> <span class="nav-text">启用 glusterd 服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置信任池（在k8s-master上操作）"><span class="nav-number">1.3.</span> <span class="nav-text">配置信任池（在k8s-master上操作）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建挂载目录"><span class="nav-number">1.4.</span> <span class="nav-text">创建挂载目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建测试卷（在k8s-master上操作）"><span class="nav-number">1.5.</span> <span class="nav-text">创建测试卷（在k8s-master上操作）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#挂载测试"><span class="nav-number">1.6.</span> <span class="nav-text">挂载测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除测试卷（在k8s-master上操作）"><span class="nav-number">1.7.</span> <span class="nav-text">删除测试卷（在k8s-master上操作）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Heketi-Server-安装部署"><span class="nav-number">2.</span> <span class="nav-text">Heketi Server 安装部署</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-Heketi"><span class="nav-number">2.1.</span> <span class="nav-text">安装 Heketi</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置-heketi-json"><span class="nav-number">2.2.</span> <span class="nav-text">配置 heketi.json</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-SSH-密钥"><span class="nav-number">2.3.</span> <span class="nav-text">创建 SSH 密钥</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启用-heketi-服务"><span class="nav-number">2.4.</span> <span class="nav-text">启用 heketi 服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#验证"><span class="nav-number">2.5.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置拓扑"><span class="nav-number">2.6.</span> <span class="nav-text">设置拓扑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置拓扑（另一种方式）"><span class="nav-number">2.7.</span> <span class="nav-text">设置拓扑（另一种方式）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建卷"><span class="nav-number">2.8.</span> <span class="nav-text">创建卷</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Darren</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
