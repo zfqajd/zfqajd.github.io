@@ -106,7 +106,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://yeadoc.cn/uploads/traefik.png">
 <meta property="og:image" content="https://yeadoc.cn/uploads/wordpress.png">
-<meta property="og:updated_time" content="2019-06-25T09:26:52.607Z">
+<meta property="og:updated_time" content="2019-08-16T06:51:36.681Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用 kubeadm 在 VMW 部署 k8s 集群之部署 MySQL 和 WordPress 应用">
 <meta name="twitter:description" content="通过前一篇文章的部署，我们已经完成了k8s集群的搭建。现在使用官网案例wordpress+mysql来部署测试。">
@@ -390,12 +390,24 @@
                 
               
 
-              <time title="Created: 2019-06-25 17:21:51 / Modified: 17:26:52" itemprop="dateCreated datePublished" datetime="2019-06-25T17:21:51+08:00">2019-06-25</time>
+              <time title="Created: 2019-06-25 17:21:51" itemprop="dateCreated datePublished" datetime="2019-06-25T17:21:51+08:00">2019-06-25</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-08-16 14:51:36" itemprop="dateModified" datetime="2019-08-16T14:51:36+08:00">2019-08-16</time>
               
             
           </span>
@@ -448,7 +460,7 @@
 
       
         <p>通过前一篇文章的部署，我们已经完成了<code>k8s</code>集群的搭建。现在使用官网案例<code>wordpress</code>+<code>mysql</code>来部署测试。<a id="more"></a><br>环境是这样的：<br>使用<code>traefik</code>做为反向代理，<code>StorageClass</code>资源使用独立的<code>GlusterFS</code>存储动态创建<code>PersistentVolumeClaim</code>。</p>
-<h2 id="添加glusterfs到k8s集群"><a href="#添加glusterfs到k8s集群" class="headerlink" title="添加glusterfs到k8s集群"></a>添加<code>glusterfs</code>到<code>k8s</code>集群</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: Service</span><br><span class="line">metadata:</span><br><span class="line">  name: glusterfs-cluster</span><br><span class="line">spec:</span><br><span class="line">  ports:</span><br><span class="line">  - port: 1</span><br><span class="line">---</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Endpoints</span><br><span class="line">metadata:</span><br><span class="line">  name: glusterfs-cluster</span><br><span class="line">subsets:</span><br><span class="line">  - addresses:</span><br><span class="line">      - ip: 192.168.1.70</span><br><span class="line">	ports:</span><br><span class="line">	  - port: 1</span><br><span class="line">  - addresses:</span><br><span class="line">      - ip: 192.168.1.71</span><br><span class="line">	ports:</span><br><span class="line">	  - port: 1	</span><br><span class="line">  - addresses:</span><br><span class="line">      - ip: 192.168.1.72</span><br><span class="line">	ports:</span><br><span class="line">	  - port: 1</span><br></pre></td></tr></table></figure>
+<h2 id="添加glusterfs到k8s集群"><a href="#添加glusterfs到k8s集群" class="headerlink" title="添加glusterfs到k8s集群"></a>添加<code>glusterfs</code>到<code>k8s</code>集群</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: Service</span><br><span class="line">metadata:</span><br><span class="line">  name: glusterfs-cluster</span><br><span class="line">spec:</span><br><span class="line">  ports:</span><br><span class="line">  - port: 1</span><br><span class="line">---</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Endpoints</span><br><span class="line">metadata:</span><br><span class="line">  name: glusterfs-cluster</span><br><span class="line">subsets:</span><br><span class="line">- addresses:</span><br><span class="line">  - ip: 192.168.1.70</span><br><span class="line">  ports:</span><br><span class="line">  - port: 1</span><br><span class="line">- addresses:</span><br><span class="line">  - ip: 192.168.1.71</span><br><span class="line">  ports:</span><br><span class="line">  - port: 1	</span><br><span class="line">- addresses:</span><br><span class="line">  - ip: 192.168.1.72</span><br><span class="line">  ports:</span><br><span class="line">  - port: 1</span><br></pre></td></tr></table></figure>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f glusterfs-endpoints.yaml</span><br></pre></td></tr></table></figure>
 <h2 id="创建StorageClass"><a href="#创建StorageClass" class="headerlink" title="创建StorageClass"></a>创建<code>StorageClass</code></h2><p>创建一个<code>secret</code>，用于存储<code>heketi</code>的密钥。<code>key</code>的值计算过程<code>echo -n &#39;adminkey&#39; | base64</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: Secret</span><br><span class="line">metadata:</span><br><span class="line">  name: heketi-secret</span><br><span class="line">  namespace: kube-system</span><br><span class="line">data:</span><br><span class="line">  key: YWRtaW5rZXk=</span><br><span class="line">type: kubernetes.io/glusterfs</span><br></pre></td></tr></table></figure></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: storage.k8s.io/v1</span><br><span class="line">kind: StorageClass</span><br><span class="line">metadata:</span><br><span class="line">  name: glusterfs-storageclass</span><br><span class="line">provisioner: kubernetes.io/glusterfs</span><br><span class="line">parameters:</span><br><span class="line">  resturl: &quot;http://192.168.1.70:18080&quot;</span><br><span class="line">  restuser: &quot;admin&quot;</span><br><span class="line">  secretName: &quot;heketi-secret&quot;</span><br><span class="line">  secretNamespace: &quot;kube-system&quot;</span><br><span class="line">  volumetype: replicate:3</span><br><span class="line">  volumenameprefix: &quot;icp&quot;</span><br></pre></td></tr></table></figure>
