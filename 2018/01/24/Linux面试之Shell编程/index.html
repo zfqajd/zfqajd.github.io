@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+<!-- Google AdSense 广告代码 -->
+<script data-ad-client="ca-pub-4696419290281923" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+  <meta name="description" content="题一使用 for 循环在 /oldboy 目录下批量创建 10 个 html 文件">
+<meta name="keywords" content="shell">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux面试之Shell编程">
+<meta property="og:url" content="https://yeadoc.cn/2018/01/24/Linux面试之Shell编程/index.html">
+<meta property="og:site_name" content="Yeadoc">
+<meta property="og:description" content="题一使用 for 循环在 /oldboy 目录下批量创建 10 个 html 文件">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://yeadoc.cn/uploads/RandomFilename.jpg">
+<meta property="og:image" content="https://yeadoc.cn/uploads/changefilename.jpg">
+<meta property="og:image" content="https://yeadoc.cn/uploads/adduser.jpg">
+<meta property="og:updated_time" content="2019-06-24T01:29:50.221Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux面试之Shell编程">
+<meta name="twitter:description" content="题一使用 for 循环在 /oldboy 目录下批量创建 10 个 html 文件">
+<meta name="twitter:image" content="https://yeadoc.cn/uploads/RandomFilename.jpg">
+
+
+
+
+
+
+  <link rel="canonical" href="https://yeadoc.cn/2018/01/24/Linux面试之Shell编程/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Linux面试之Shell编程 | Yeadoc</title>
+  
+
+
+
+
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e0b9da7819be2e9fbaf7802d2066a47a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yeadoc</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">亿文-一位运维工程师的文档库</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>About</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-message">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/message/" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>Message</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yeadoc.cn/2018/01/24/Linux面试之Shell编程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Darren">
+      <meta itemprop="description" content="运维工作中遇到的问题总结，新知识的记录。">
+      <meta itemprop="image" content="/uploads/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yeadoc">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux面试之Shell编程
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-01-24 11:52:08" itemprop="dateCreated datePublished" datetime="2018-01-24T11:52:08+08:00">2018-01-24</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-06-24 09:29:50" itemprop="dateModified" datetime="2019-06-24T09:29:50+08:00">2019-06-24</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Shell/" itemprop="url" rel="index"><span itemprop="name">Shell</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2018/01/24/Linux面试之Shell编程/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2018/01/24/Linux面试之Shell编程/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <ul>
+<li><p>题一<br>使用 for 循环在 /oldboy 目录下批量创建 10 个 html 文件<a id="more"></a>，名称格式为：随机的10个小写字母加固定字符串 oldboy 。<br><img src="/uploads/RandomFilename.jpg" alt="RandomFilename"></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">filename_suf="oldboy"</span><br><span class="line">ext=".html"</span><br><span class="line">dirname="/oldboy/"</span><br><span class="line"></span><br><span class="line">if [ ! -d $&#123;dirname&#125; ]; then</span><br><span class="line">    mkdir -p $&#123;dirname&#125;</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">for((i=1;i&lt;11;i++)); do</span><br><span class="line">    filename_pre=`cat /dev/urandom | tr -dc [:lower:] | head -c10`</span><br><span class="line">    touch $&#123;dirname&#125;$&#123;filename_pre&#125;_$&#123;filename_suf&#125;$&#123;ext&#125;</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">echo "Create These Files:" &amp;&amp; ls $&#123;dirname&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>题二<br>将题一文件名中的 oldboy 全部改成 oldgirl(用 for 循环实现)，并且 html 改成大写。<br><img src="/uploads/changefilename.jpg" alt="changefilename"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line">dirname=<span class="string">"/oldboy/"</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"The old filename:"</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> `ls <span class="variable">$&#123;dirname&#125;</span>`; <span class="keyword">do</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="variable">$&#123;i&#125;</span></span><br><span class="line">    newfilename=`<span class="built_in">echo</span> <span class="variable">$i</span> | sed -e <span class="string">'s/oldboy/oldgirl/g'</span> -e <span class="string">'s/\.html/\.HTML/g'</span>`</span><br><span class="line">    <span class="keyword">if</span> [ <span class="variable">$&#123;i&#125;</span> != <span class="variable">$&#123;newfilename&#125;</span> ]; <span class="keyword">then</span></span><br><span class="line">         mv <span class="variable">$&#123;dirname&#125;</span><span class="variable">$&#123;i&#125;</span> <span class="variable">$&#123;dirname&#125;</span><span class="variable">$&#123;newfilename&#125;</span></span><br><span class="line">    <span class="keyword">fi</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"><span class="built_in">echo</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"The new filename:"</span> &amp;&amp; ls <span class="variable">$&#123;dirname&#125;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>题三<br>批量创建10个系统账号 oldboy01-oldboy10 并设置密码（密码为随机8位字符串）。<br><img src="/uploads/adduser.jpg" alt="adduser"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line">username=<span class="string">"oldboy"</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> $(seq -w 10); <span class="keyword">do</span></span><br><span class="line">    id <span class="variable">$&#123;username&#125;</span><span class="variable">$&#123;i&#125;</span> &amp;&gt; /dev/null</span><br><span class="line">    <span class="keyword">if</span> [ $? -eq 0 ]; <span class="keyword">then</span></span><br><span class="line">        <span class="built_in">echo</span> <span class="string">"<span class="variable">$&#123;username&#125;</span><span class="variable">$&#123;i&#125;</span> already exist!"</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        useradd <span class="variable">$&#123;username&#125;</span><span class="variable">$&#123;i&#125;</span></span><br><span class="line">        passwd=`<span class="built_in">echo</span> <span class="variable">$RANDOM</span> | md5sum | cut -c 1-8`</span><br><span class="line">        <span class="built_in">echo</span> <span class="string">"<span class="variable">$passwd</span>"</span> | passwd --stdin <span class="variable">$&#123;username&#125;</span><span class="variable">$&#123;i&#125;</span> &amp;&gt; /dev/null</span><br><span class="line">        <span class="built_in">echo</span> -e <span class="string">"User: <span class="variable">$&#123;username&#125;</span><span class="variable">$&#123;i&#125;</span>\tPassword: <span class="variable">$passwd</span>"</span></span><br><span class="line">        <span class="built_in">echo</span> <span class="string">"<span class="variable">$&#123;username&#125;</span><span class="variable">$&#123;i&#125;</span> add success!"</span></span><br><span class="line">    <span class="keyword">fi</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>题四<br>写一个脚本，实现判断 192.168.10.0/24 网络里，当前在线用户的IP有哪些？</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment">##其中$$为该进程的pid</span></span><br><span class="line">tmp_fifofile=<span class="string">"/tmp/$$.fifo"</span></span><br><span class="line"><span class="comment">##创建命名管道</span></span><br><span class="line">mkfifo <span class="variable">$tmp_fifofile</span></span><br><span class="line"><span class="comment">##把文件描述符6和FIFO进程绑定</span></span><br><span class="line"><span class="built_in">exec</span> 6&lt;&gt; <span class="variable">$tmp_fifofile</span></span><br><span class="line"><span class="comment">##绑定后，该文件就可以删除了</span></span><br><span class="line">rm -f <span class="variable">$tmp_fifofile</span></span><br><span class="line"></span><br><span class="line"><span class="comment">##并发数为254，用这个数字来控制并发数</span></span><br><span class="line">thread=254</span><br><span class="line"><span class="keyword">for</span>((i=0;i&lt;<span class="variable">$thread</span>;i++)); <span class="keyword">do</span></span><br><span class="line">    <span class="comment">##写一个空行到管道里，因为管道文件的读取以行为单位</span></span><br><span class="line">    <span class="built_in">echo</span> &gt;&amp;6</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line">network=<span class="string">"192.168.10."</span></span><br><span class="line"><span class="keyword">for</span>((i=1;i&lt;255;i++)); <span class="keyword">do</span></span><br><span class="line">    <span class="comment">##读取管道中的一行，每次读取后，管道都会少一行</span></span><br><span class="line">    <span class="built_in">read</span> -u6</span><br><span class="line">    &#123;</span><br><span class="line">        ping -c1 <span class="variable">$&#123;network&#125;</span><span class="variable">$&#123;i&#125;</span> | grep -q <span class="string">'ttl='</span> &amp;&amp; <span class="built_in">echo</span> <span class="string">"<span class="variable">$&#123;network&#125;</span><span class="variable">$&#123;i&#125;</span> online."</span> || <span class="built_in">echo</span> <span class="string">"<span class="variable">$&#123;network&#125;</span><span class="variable">$&#123;i&#125;</span> down!"</span></span><br><span class="line">        <span class="comment">##每次执行完命令，再增加一个空行，这样下面的进程才可以继续执行</span></span><br><span class="line">        <span class="built_in">echo</span> &gt;&amp;6</span><br><span class="line">    &#125;&amp;  <span class="comment">##这里要放入后台去，否则并发实现不了</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"><span class="comment">##wait的意思是需要等待以上所有操作都结束后，再往下执行</span></span><br><span class="line"><span class="built_in">wait</span></span><br><span class="line"><span class="comment">##关闭文件描述符6的写</span></span><br><span class="line"><span class="built_in">exec</span> 6&gt;&amp;-</span><br><span class="line"><span class="built_in">exit</span> 0</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>题五：自然数之和<br>脚本计算 1+2+3….+100=?</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">sum=0</span><br><span class="line"><span class="keyword">for</span> (( i = 1; i &lt; 101; i++ )); <span class="keyword">do</span></span><br><span class="line">    sum=$((sum+i))</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#for i in &#123;1..100&#125;; do</span></span><br><span class="line"><span class="comment">#    sum=`expr $sum + $i`</span></span><br><span class="line"><span class="comment">#done</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"1+2+3....+100=<span class="variable">$sum</span>"</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>题六：批量添加用户<br>批量添加20个用户，用户名为：user1-20，密码为 user 后面跟5个随机字符或数字。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> $(seq -w 20); <span class="keyword">do</span></span><br><span class="line">  id user<span class="variable">$i</span> &amp;&gt; /dev/null</span><br><span class="line">  <span class="keyword">if</span> [[ $? -eq 0 ]]; <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">"user<span class="variable">$i</span> already exist!"</span></span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    useradd user<span class="variable">$i</span></span><br><span class="line">    passwd=user`<span class="built_in">echo</span> <span class="variable">$RANDOM</span> | md5sum | cut -c 1-5`</span><br><span class="line">    <span class="built_in">echo</span> <span class="string">"<span class="variable">$passwd</span>"</span> | passwd --stdin user<span class="variable">$i</span> &amp;&gt; /dev/null</span><br><span class="line">    <span class="built_in">echo</span> -e <span class="string">"User: user<span class="variable">$i</span>\tPasswd: <span class="variable">$passwd</span>"</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">"user<span class="variable">$i</span> add success!"</span></span><br><span class="line">  <span class="keyword">fi</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>题七： 猜数字游戏<br>随机生成1到100的整数。判断输入的数是否是数字及在范围内，如果不是，提示重新输入；如果猜大了，提示输小的数字，猜小了，提示输大的数字。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line">r=`<span class="built_in">echo</span> <span class="variable">$RANDOM</span>`</span><br><span class="line">n=$[<span class="variable">$r</span>%100]</span><br><span class="line">max=101</span><br><span class="line">min=0</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> :</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">  <span class="built_in">read</span> -p <span class="string">"请输入一个数字，范围（<span class="variable">$min</span> &lt; m &lt; <span class="variable">$max</span>）: "</span> m</span><br><span class="line">  <span class="comment">#强制10进制转换，以避免出现 [[: 000080: value too great for base (error token is "000080")</span></span><br><span class="line">  m=$((10<span class="comment">#$m))</span></span><br><span class="line">  <span class="keyword">if</span> [[ <span class="string">"<span class="variable">$m</span>"</span> =~ ^[0-9]+$ ]] &amp;&amp; [[ <span class="variable">$m</span> -lt <span class="variable">$max</span> ]] &amp;&amp; [[ <span class="variable">$m</span> -gt <span class="variable">$min</span> ]]; <span class="keyword">then</span></span><br><span class="line">    <span class="keyword">if</span> [[ <span class="variable">$n</span> == <span class="variable">$m</span> ]]; <span class="keyword">then</span></span><br><span class="line">      <span class="built_in">echo</span> <span class="string">"恭喜你猜对了，这个数就是 "</span> <span class="variable">$n</span></span><br><span class="line">      <span class="built_in">break</span></span><br><span class="line">    <span class="keyword">elif</span> [[ <span class="variable">$n</span> -gt <span class="variable">$m</span> ]]; <span class="keyword">then</span></span><br><span class="line">      <span class="built_in">echo</span> <span class="string">"猜小了，请输入一个更大的数！"</span></span><br><span class="line">      min=<span class="variable">$m</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      <span class="built_in">echo</span> <span class="string">"猜大了，请输入一个更小的数！"</span></span><br><span class="line">      max=<span class="variable">$m</span></span><br><span class="line">    <span class="keyword">fi</span></span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">"请输入正确的数字！"</span></span><br><span class="line">    sleep 1</span><br><span class="line">  <span class="keyword">fi</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>一分、两分都是爱！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>Donate</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/wechatpay.jpg" alt="Darren WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+    
+
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/shell/" rel="tag"># shell</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/16/Python-学习示例之猜数字/" rel="next" title="Python 学习示例之猜数字">
+                <i class="fa fa-chevron-left"></i> Python 学习示例之猜数字
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/25/Linux-系统监控：记录用户操作轨迹/" rel="prev" title="Linux 系统监控：记录用户操作轨迹">
+                Linux 系统监控：记录用户操作轨迹 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+<!-- 谷歌广告 -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 头部广告 -->
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4696419290281923" data-ad-slot="6493204046" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/avatar.jpeg" alt="Darren">
+            
+              <p class="site-author-name" itemprop="name">Darren</p>
+              <p class="site-description motion-element" itemprop="description">运维工作中遇到的问题总结，新知识的记录。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">38</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">33</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/zfqajd" title="GitHub &rarr; https://github.com/zfqajd" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:zfqajd@gmail.com" title="E-Mail &rarr; mailto:zfqajd@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+
+      <!-- 谷歌广告 -->
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 头部广告 -->
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4696419290281923" data-ad-slot="6493204046" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">  <a href="http://www.miitbeian.gov.cn" rel="noopener" target="_blank">闽ICP备15015461号-1 </a>&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Darren</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail,link';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: true,
+    notify: true,
+    appId: 'nX56xwqanaB776cO2XaRfICK-gzGzoHsz',
+    appKey: 'NQSiiODA5jdKz0MUTaxRcdm8',
+    placeholder: 'o( =•ω•= )m客官别走！我们坐下来好好聊聊～～～',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+</script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

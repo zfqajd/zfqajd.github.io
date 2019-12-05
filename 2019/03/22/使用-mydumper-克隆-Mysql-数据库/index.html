@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+<!-- Google AdSense 广告代码 -->
+<script data-ad-client="ca-pub-4696419290281923" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+  <meta name="description" content="原本两个项目共用一个数据库，现在数据库要独立出来，要在同一Mysql实例克隆一个新数据库出来。">
+<meta name="keywords" content="MySQL,Backup,mydumper">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 mydumper 克隆 Mysql 数据库">
+<meta property="og:url" content="https://yeadoc.cn/2019/03/22/使用-mydumper-克隆-Mysql-数据库/index.html">
+<meta property="og:site_name" content="Yeadoc">
+<meta property="og:description" content="原本两个项目共用一个数据库，现在数据库要独立出来，要在同一Mysql实例克隆一个新数据库出来。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-06-24T01:29:50.221Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用 mydumper 克隆 Mysql 数据库">
+<meta name="twitter:description" content="原本两个项目共用一个数据库，现在数据库要独立出来，要在同一Mysql实例克隆一个新数据库出来。">
+
+
+
+
+
+
+  <link rel="canonical" href="https://yeadoc.cn/2019/03/22/使用-mydumper-克隆-Mysql-数据库/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>使用 mydumper 克隆 Mysql 数据库 | Yeadoc</title>
+  
+
+
+
+
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e0b9da7819be2e9fbaf7802d2066a47a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yeadoc</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">亿文-一位运维工程师的文档库</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>About</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-message">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/message/" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>Message</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yeadoc.cn/2019/03/22/使用-mydumper-克隆-Mysql-数据库/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Darren">
+      <meta itemprop="description" content="运维工作中遇到的问题总结，新知识的记录。">
+      <meta itemprop="image" content="/uploads/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yeadoc">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用 mydumper 克隆 Mysql 数据库
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-03-22 15:05:19" itemprop="dateCreated datePublished" datetime="2019-03-22T15:05:19+08:00">2019-03-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-06-24 09:29:50" itemprop="dateModified" datetime="2019-06-24T09:29:50+08:00">2019-06-24</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/MySQL/" itemprop="url" rel="index"><span itemprop="name">MySQL</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2019/03/22/使用-mydumper-克隆-Mysql-数据库/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2019/03/22/使用-mydumper-克隆-Mysql-数据库/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>原本两个项目共用一个数据库，现在数据库要独立出来，要在同一<code>Mysql</code>实例克隆一个新数据库出来。<a id="more"></a><br>最先使用<code>mysqldump</code>导数据，但是数据库有点大，<code>mysqldump</code>又是单线程，导入导出很耗时。<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ mysqldump -h 127.0.0.1 -u root -p root密码 --single-transaction yeadoc | mysql -h 127.0.0.1 -u root -p root密码 yeadoc_new</span><br></pre></td></tr></table></figure></p>
+<p>后来<code>google</code>了下，发现<code>mydumper</code>是多线程备份，就试了下，耗时2小时备份恢复出一个新数据库。</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install https://github.com/maxbube/mydumper/releases/download/v0.9.5/mydumper-0.9.5-1.el7.x86_64.rpm</span><br></pre></td></tr></table></figure>
+<h3 id="mydumper-用法"><a href="#mydumper-用法" class="headerlink" title="mydumper 用法"></a>mydumper 用法</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">[root@357e633663c9 /]# mydumper --help</span><br><span class="line">Usage:</span><br><span class="line">  mydumper [OPTION...] multi-threaded MySQL dumping</span><br><span class="line"></span><br><span class="line">Help Options:</span><br><span class="line">  -?, --help                  Show help options</span><br><span class="line"></span><br><span class="line">Application Options:</span><br><span class="line">  -B, --database              Database to dump</span><br><span class="line">  -T, --tables-list           Comma delimited table list to dump (does not exclude regex option)</span><br><span class="line">  -O, --omit-from-file        File containing a list of database.table entries to skip, one per line (skips before applying regex option)</span><br><span class="line">  -o, --outputdir             Directory to output files to</span><br><span class="line">  -s, --statement-size        Attempted size of INSERT statement in bytes, default 1000000</span><br><span class="line">  -r, --rows                  Try to split tables into chunks of this many rows. This option turns off --chunk-filesize</span><br><span class="line">  -F, --chunk-filesize        Split tables into chunks of this output file size. This value is in MB</span><br><span class="line">  -c, --compress              Compress output files</span><br><span class="line">  -e, --build-empty-files     Build dump files even if no data available from table</span><br><span class="line">  -x, --regex                 Regular expression for &apos;db.table&apos; matching</span><br><span class="line">  -i, --ignore-engines        Comma delimited list of storage engines to ignore</span><br><span class="line">  -N, --insert-ignore         Dump rows with INSERT IGNORE</span><br><span class="line">  -m, --no-schemas            Do not dump table schemas with the data</span><br><span class="line">  -d, --no-data               Do not dump table data</span><br><span class="line">  -G, --triggers              Dump triggers</span><br><span class="line">  -E, --events                Dump events</span><br><span class="line">  -R, --routines              Dump stored procedures and functions</span><br><span class="line">  -W, --no-views              Do not dump VIEWs</span><br><span class="line">  -k, --no-locks              Do not execute the temporary shared read lock.  WARNING: This will cause inconsistent backups</span><br><span class="line">  --no-backup-locks           Do not use Percona backup locks</span><br><span class="line">  --less-locking              Minimize locking time on InnoDB tables.</span><br><span class="line">  -l, --long-query-guard      Set long query timer in seconds, default 60</span><br><span class="line">  -K, --kill-long-queries     Kill long running queries (instead of aborting)</span><br><span class="line">  -D, --daemon                Enable daemon mode</span><br><span class="line">  -I, --snapshot-interval     Interval between each dump snapshot (in minutes), requires --daemon, default 60</span><br><span class="line">  -L, --logfile               Log file name to use, by default stdout is used</span><br><span class="line">  --tz-utc                    SET TIME_ZONE=&apos;+00:00&apos; at top of dump to allow dumping of TIMESTAMP data when a server has data in different time zones or data is being moved between servers with different time zones, defaults to on use --skip-tz-utc to disable.</span><br><span class="line">  --skip-tz-utc               </span><br><span class="line">  --use-savepoints            Use savepoints to reduce metadata locking issues, needs SUPER privilege</span><br><span class="line">  --success-on-1146           Not increment error count and Warning instead of Critical in case of table doesn&apos;t exist</span><br><span class="line">  --lock-all-tables           Use LOCK TABLE for all, instead of FTWRL</span><br><span class="line">  -U, --updated-since         Use Update_time to dump only tables updated in the last U days</span><br><span class="line">  --trx-consistency-only      Transactional consistency only</span><br><span class="line">  --complete-insert           Use complete INSERT statements that include column names</span><br><span class="line">  -h, --host                  The host to connect to</span><br><span class="line">  -u, --user                  Username with the necessary privileges</span><br><span class="line">  -p, --password              User password</span><br><span class="line">  -a, --ask-password          Prompt For User password</span><br><span class="line">  -P, --port                  TCP/IP port to connect to</span><br><span class="line">  -S, --socket                UNIX domain socket file to use for connection</span><br><span class="line">  -t, --threads               Number of threads to use, default 4</span><br><span class="line">  -C, --compress-protocol     Use compression on the MySQL connection</span><br><span class="line">  -V, --version               Show the program version and exit</span><br><span class="line">  -v, --verbose               Verbosity of output, 0 = silent, 1 = errors, 2 = warnings, 3 = info, default 2</span><br><span class="line">  --defaults-file             Use a specific defaults file</span><br><span class="line">  --ssl                       Connect using SSL</span><br><span class="line">  --key                       The path name to the key file</span><br><span class="line">  --cert                      The path name to the certificate file</span><br><span class="line">  --ca                        The path name to the certificate authority file</span><br><span class="line">  --capath                    The path name to a directory that contains trusted SSL CA certificates in PEM format</span><br><span class="line">  --cipher                    A list of permissible ciphers to use for SSL encryption</span><br></pre></td></tr></table></figure>
+<h3 id="myloader-用法"><a href="#myloader-用法" class="headerlink" title="myloader 用法"></a>myloader 用法</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[root@357e633663c9 /]# myloader --help</span><br><span class="line">Usage:</span><br><span class="line">  myloader [OPTION...] multi-threaded MySQL loader</span><br><span class="line"></span><br><span class="line">Help Options:</span><br><span class="line">  -?, --help                        Show help options</span><br><span class="line"></span><br><span class="line">Application Options:</span><br><span class="line">  -d, --directory                   Directory of the dump to import</span><br><span class="line">  -q, --queries-per-transaction     Number of queries per transaction, default 1000</span><br><span class="line">  -o, --overwrite-tables            Drop tables if they already exist</span><br><span class="line">  -B, --database                    An alternative database to restore into</span><br><span class="line">  -s, --source-db                   Database to restore</span><br><span class="line">  -e, --enable-binlog               Enable binary logging of the restore data</span><br><span class="line">  -h, --host                        The host to connect to</span><br><span class="line">  -u, --user                        Username with the necessary privileges</span><br><span class="line">  -p, --password                    User password</span><br><span class="line">  -a, --ask-password                Prompt For User password</span><br><span class="line">  -P, --port                        TCP/IP port to connect to</span><br><span class="line">  -S, --socket                      UNIX domain socket file to use for connection</span><br><span class="line">  -t, --threads                     Number of threads to use, default 4</span><br><span class="line">  -C, --compress-protocol           Use compression on the MySQL connection</span><br><span class="line">  -V, --version                     Show the program version and exit</span><br><span class="line">  -v, --verbose                     Verbosity of output, 0 = silent, 1 = errors, 2 = warnings, 3 = info, default 2</span><br><span class="line">  --defaults-file                   Use a specific defaults file</span><br></pre></td></tr></table></figure>
+<h3 id="备份数据库"><a href="#备份数据库" class="headerlink" title="备份数据库"></a>备份数据库</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mydumper -h 127.0.0.1 -u root -p root密码 \</span><br><span class="line">--database yeadoc \</span><br><span class="line">--outputdir /var/backup \</span><br><span class="line">--compress \</span><br><span class="line">--less-locking \</span><br><span class="line">--use-savepoints \</span><br><span class="line">--lock-all-tables \</span><br><span class="line">--verbose 3 \</span><br><span class="line">--threads 8</span><br></pre></td></tr></table></figure>
+<h3 id="恢复数据库"><a href="#恢复数据库" class="headerlink" title="恢复数据库"></a>恢复数据库</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">myloader -h 127.0.0.1 -u root -p root密码 \</span><br><span class="line">--directory /var/backup \</span><br><span class="line">--database yeadoc_new \</span><br><span class="line">--<span class="built_in">source</span>-db yeadoc \</span><br><span class="line">--<span class="built_in">enable</span>-binlog \</span><br><span class="line">--verbose 3 \</span><br><span class="line">--threads 8</span><br></pre></td></tr></table></figure>
+<p>恢复的时候一定要加上参数<code>--enable-binlog</code>，要不到时主从同步不了。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>一分、两分都是爱！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>Donate</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/wechatpay.jpg" alt="Darren WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+    
+
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+          
+            <a href="/tags/Backup/" rel="tag"># Backup</a>
+          
+            <a href="/tags/mydumper/" rel="tag"># mydumper</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/03/06/使用-XtraBackup-备份-Mysql-从库/" rel="next" title="使用 XtraBackup 备份 Mysql 从库">
+                <i class="fa fa-chevron-left"></i> 使用 XtraBackup 备份 Mysql 从库
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/26/Zabbix-使用之监控-Mysql-主从状态/" rel="prev" title="Zabbix 使用之监控 Mysql 主从状态">
+                Zabbix 使用之监控 Mysql 主从状态 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+<!-- 谷歌广告 -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 头部广告 -->
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4696419290281923" data-ad-slot="6493204046" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/avatar.jpeg" alt="Darren">
+            
+              <p class="site-author-name" itemprop="name">Darren</p>
+              <p class="site-description motion-element" itemprop="description">运维工作中遇到的问题总结，新知识的记录。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">38</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">33</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/zfqajd" title="GitHub &rarr; https://github.com/zfqajd" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:zfqajd@gmail.com" title="E-Mail &rarr; mailto:zfqajd@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装"><span class="nav-number">1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mydumper-用法"><span class="nav-number">2.</span> <span class="nav-text">mydumper 用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#myloader-用法"><span class="nav-number">3.</span> <span class="nav-text">myloader 用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#备份数据库"><span class="nav-number">4.</span> <span class="nav-text">备份数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#恢复数据库"><span class="nav-number">5.</span> <span class="nav-text">恢复数据库</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+      <!-- 谷歌广告 -->
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 头部广告 -->
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4696419290281923" data-ad-slot="6493204046" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">  <a href="http://www.miitbeian.gov.cn" rel="noopener" target="_blank">闽ICP备15015461号-1 </a>&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Darren</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail,link';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: true,
+    notify: true,
+    appId: 'nX56xwqanaB776cO2XaRfICK-gzGzoHsz',
+    appKey: 'NQSiiODA5jdKz0MUTaxRcdm8',
+    placeholder: 'o( =•ω•= )m客官别走！我们坐下来好好聊聊～～～',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+</script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

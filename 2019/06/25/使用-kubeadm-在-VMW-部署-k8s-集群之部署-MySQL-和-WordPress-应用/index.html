@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+<!-- Google AdSense 广告代码 -->
+<script data-ad-client="ca-pub-4696419290281923" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+  <meta name="description" content="通过前一篇文章的部署，我们已经完成了k8s集群的搭建。现在使用官网案例wordpress+mysql来部署测试。">
+<meta name="keywords" content="k8s,gluster,heketi,mysql,wordpress">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 kubeadm 在 VMW 部署 k8s 集群之部署 MySQL 和 WordPress 应用">
+<meta property="og:url" content="https://yeadoc.cn/2019/06/25/使用-kubeadm-在-VMW-部署-k8s-集群之部署-MySQL-和-WordPress-应用/index.html">
+<meta property="og:site_name" content="Yeadoc">
+<meta property="og:description" content="通过前一篇文章的部署，我们已经完成了k8s集群的搭建。现在使用官网案例wordpress+mysql来部署测试。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://yeadoc.cn/uploads/traefik.png">
+<meta property="og:image" content="https://yeadoc.cn/uploads/wordpress.png">
+<meta property="og:updated_time" content="2019-08-16T06:52:16.581Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用 kubeadm 在 VMW 部署 k8s 集群之部署 MySQL 和 WordPress 应用">
+<meta name="twitter:description" content="通过前一篇文章的部署，我们已经完成了k8s集群的搭建。现在使用官网案例wordpress+mysql来部署测试。">
+<meta name="twitter:image" content="https://yeadoc.cn/uploads/traefik.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://yeadoc.cn/2019/06/25/使用-kubeadm-在-VMW-部署-k8s-集群之部署-MySQL-和-WordPress-应用/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>使用 kubeadm 在 VMW 部署 k8s 集群之部署 MySQL 和 WordPress 应用 | Yeadoc</title>
+  
+
+
+
+
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e0b9da7819be2e9fbaf7802d2066a47a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yeadoc</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">亿文-一位运维工程师的文档库</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>About</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-message">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/message/" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>Message</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yeadoc.cn/2019/06/25/使用-kubeadm-在-VMW-部署-k8s-集群之部署-MySQL-和-WordPress-应用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Darren">
+      <meta itemprop="description" content="运维工作中遇到的问题总结，新知识的记录。">
+      <meta itemprop="image" content="/uploads/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yeadoc">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用 kubeadm 在 VMW 部署 k8s 集群之部署 MySQL 和 WordPress 应用
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-06-25 17:21:51" itemprop="dateCreated datePublished" datetime="2019-06-25T17:21:51+08:00">2019-06-25</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-08-16 14:52:16" itemprop="dateModified" datetime="2019-08-16T14:52:16+08:00">2019-08-16</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/k8s/" itemprop="url" rel="index"><span itemprop="name">k8s</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2019/06/25/使用-kubeadm-在-VMW-部署-k8s-集群之部署-MySQL-和-WordPress-应用/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2019/06/25/使用-kubeadm-在-VMW-部署-k8s-集群之部署-MySQL-和-WordPress-应用/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>通过前一篇文章的部署，我们已经完成了<code>k8s</code>集群的搭建。现在使用官网案例<code>wordpress</code>+<code>mysql</code>来部署测试。<a id="more"></a><br>环境是这样的：<br>使用<code>traefik</code>做为反向代理，<code>StorageClass</code>资源使用独立的<code>GlusterFS</code>存储动态创建<code>PersistentVolumeClaim</code>。</p>
+<h2 id="添加glusterfs到k8s集群"><a href="#添加glusterfs到k8s集群" class="headerlink" title="添加glusterfs到k8s集群"></a>添加<code>glusterfs</code>到<code>k8s</code>集群</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: Service</span><br><span class="line">metadata:</span><br><span class="line">  name: glusterfs-cluster</span><br><span class="line">spec:</span><br><span class="line">  ports:</span><br><span class="line">  - port: 1</span><br><span class="line">---</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Endpoints</span><br><span class="line">metadata:</span><br><span class="line">  name: glusterfs-cluster</span><br><span class="line">subsets:</span><br><span class="line">- addresses:</span><br><span class="line">  - ip: 192.168.1.70</span><br><span class="line">  ports:</span><br><span class="line">  - port: 1</span><br><span class="line">- addresses:</span><br><span class="line">  - ip: 192.168.1.71</span><br><span class="line">  ports:</span><br><span class="line">  - port: 1	</span><br><span class="line">- addresses:</span><br><span class="line">  - ip: 192.168.1.72</span><br><span class="line">  ports:</span><br><span class="line">  - port: 1</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f glusterfs-endpoints.yaml</span><br></pre></td></tr></table></figure>
+<h2 id="创建StorageClass"><a href="#创建StorageClass" class="headerlink" title="创建StorageClass"></a>创建<code>StorageClass</code></h2><p>创建一个<code>secret</code>，用于存储<code>heketi</code>的密钥。<code>key</code>的值计算过程<code>echo -n &#39;adminkey&#39; | base64</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: Secret</span><br><span class="line">metadata:</span><br><span class="line">  name: heketi-secret</span><br><span class="line">  namespace: kube-system</span><br><span class="line">data:</span><br><span class="line">  key: YWRtaW5rZXk=</span><br><span class="line">type: kubernetes.io/glusterfs</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: storage.k8s.io/v1</span><br><span class="line">kind: StorageClass</span><br><span class="line">metadata:</span><br><span class="line">  name: glusterfs-storageclass</span><br><span class="line">provisioner: kubernetes.io/glusterfs</span><br><span class="line">parameters:</span><br><span class="line">  resturl: &quot;http://192.168.1.70:18080&quot;</span><br><span class="line">  restuser: &quot;admin&quot;</span><br><span class="line">  secretName: &quot;heketi-secret&quot;</span><br><span class="line">  secretNamespace: &quot;kube-system&quot;</span><br><span class="line">  volumetype: replicate:3</span><br><span class="line">  volumenameprefix: &quot;icp&quot;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f heketi-secret.yaml -f glusterfs-storageclass.yaml</span><br></pre></td></tr></table></figure>
+<h2 id="使用traefik作为ingress-control"><a href="#使用traefik作为ingress-control" class="headerlink" title="使用traefik作为ingress control"></a>使用<code>traefik</code>作为<code>ingress control</code></h2><p>这部分按<code>traefik</code>官网示例操作的。</p>
+<blockquote>
+<p><a href="https://docs.traefik.io/user-guide/kubernetes/" target="_blank" rel="noopener">https://docs.traefik.io/user-guide/kubernetes/</a></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">kind: ClusterRole</span><br><span class="line">apiVersion: rbac.authorization.k8s.io/v1beta1</span><br><span class="line">metadata:</span><br><span class="line">  name: traefik-ingress-controller</span><br><span class="line">rules:</span><br><span class="line">  - apiGroups:</span><br><span class="line">      - &quot;&quot;</span><br><span class="line">    resources:</span><br><span class="line">      - services</span><br><span class="line">      - endpoints</span><br><span class="line">      - secrets</span><br><span class="line">    verbs:</span><br><span class="line">      - get</span><br><span class="line">      - list</span><br><span class="line">      - watch</span><br><span class="line">  - apiGroups:</span><br><span class="line">      - extensions</span><br><span class="line">    resources:</span><br><span class="line">      - ingresses</span><br><span class="line">    verbs:</span><br><span class="line">      - get</span><br><span class="line">      - list</span><br><span class="line">      - watch</span><br><span class="line">  - apiGroups:</span><br><span class="line">    - extensions</span><br><span class="line">    resources:</span><br><span class="line">    - ingresses/status</span><br><span class="line">    verbs:</span><br><span class="line">    - update</span><br><span class="line">---</span><br><span class="line">kind: ClusterRoleBinding</span><br><span class="line">apiVersion: rbac.authorization.k8s.io/v1beta1</span><br><span class="line">metadata:</span><br><span class="line">  name: traefik-ingress-controller</span><br><span class="line">roleRef:</span><br><span class="line">  apiGroup: rbac.authorization.k8s.io</span><br><span class="line">  kind: ClusterRole</span><br><span class="line">  name: traefik-ingress-controller</span><br><span class="line">subjects:</span><br><span class="line">- kind: ServiceAccount</span><br><span class="line">  name: traefik-ingress-controller</span><br><span class="line">  namespace: kube-system</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: ServiceAccount</span><br><span class="line">metadata:</span><br><span class="line">  name: traefik-ingress-controller</span><br><span class="line">  namespace: kube-system</span><br><span class="line">---</span><br><span class="line">kind: DaemonSet</span><br><span class="line">apiVersion: extensions/v1beta1</span><br><span class="line">metadata:</span><br><span class="line">  name: traefik-ingress-controller</span><br><span class="line">  namespace: kube-system</span><br><span class="line">  labels:</span><br><span class="line">    k8s-app: traefik-ingress-lb</span><br><span class="line">spec:</span><br><span class="line">  template:</span><br><span class="line">    metadata:</span><br><span class="line">      labels:</span><br><span class="line">        k8s-app: traefik-ingress-lb</span><br><span class="line">        name: traefik-ingress-lb</span><br><span class="line">    spec:</span><br><span class="line">      serviceAccountName: traefik-ingress-controller</span><br><span class="line">      terminationGracePeriodSeconds: 60</span><br><span class="line">      containers:</span><br><span class="line">      - image: traefik</span><br><span class="line">        name: traefik-ingress-lb</span><br><span class="line">        ports:</span><br><span class="line">        - name: http</span><br><span class="line">          containerPort: 80</span><br><span class="line">          hostPort: 80</span><br><span class="line">        - name: admin</span><br><span class="line">          containerPort: 8080</span><br><span class="line">          hostPort: 8080</span><br><span class="line">        securityContext:</span><br><span class="line">          capabilities:</span><br><span class="line">            drop:</span><br><span class="line">            - ALL</span><br><span class="line">            add:</span><br><span class="line">            - NET_BIND_SERVICE</span><br><span class="line">        args:</span><br><span class="line">        - --api</span><br><span class="line">        - --kubernetes</span><br><span class="line">        - --logLevel=INFO</span><br><span class="line">---</span><br><span class="line">kind: Service</span><br><span class="line">apiVersion: v1</span><br><span class="line">metadata:</span><br><span class="line">  name: traefik-ingress-service</span><br><span class="line">  namespace: kube-system</span><br><span class="line">spec:</span><br><span class="line">  selector:</span><br><span class="line">    k8s-app: traefik-ingress-lb</span><br><span class="line">  ports:</span><br><span class="line">    - protocol: TCP</span><br><span class="line">      port: 80</span><br><span class="line">      name: web</span><br><span class="line">    - protocol: TCP</span><br><span class="line">      port: 8080</span><br><span class="line">      name: admin</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f trafik-rbac.yaml</span><br><span class="line">kubectl apply -f trafik-ds.yaml</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Service</span><br><span class="line">metadata:</span><br><span class="line">  name: traefik-web-ui</span><br><span class="line">  namespace: kube-system</span><br><span class="line">spec:</span><br><span class="line">  selector:</span><br><span class="line">    k8s-app: traefik-ingress-lb</span><br><span class="line">  ports:</span><br><span class="line">  - name: web</span><br><span class="line">    port: 80</span><br><span class="line">    targetPort: 8080</span><br><span class="line">---</span><br><span class="line">apiVersion: extensions/v1beta1</span><br><span class="line">kind: Ingress</span><br><span class="line">metadata:</span><br><span class="line">  name: traefik-web-ui</span><br><span class="line">  namespace: kube-system</span><br><span class="line">spec:</span><br><span class="line">  rules:</span><br><span class="line">  - host: traefik-ui.minikube</span><br><span class="line">    http:</span><br><span class="line">      paths:</span><br><span class="line">      - path: /</span><br><span class="line">        backend:</span><br><span class="line">          serviceName: traefik-web-ui</span><br><span class="line">          servicePort: web</span><br></pre></td></tr></table></figure>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>在自己的电脑配置<code>hosts</code>，把<code>traefik-ui.minikube</code>指向<code>192.168.1.71</code>，浏览器访问<code>traefik-ui.minikube</code>如下<br><img src="/uploads/traefik.png" alt></p>
+<h2 id="部署-MySQL"><a href="#部署-MySQL" class="headerlink" title="部署 MySQL"></a>部署 MySQL</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: Secret</span><br><span class="line">metadata:</span><br><span class="line">  name: mysql-pass</span><br><span class="line">data:</span><br><span class="line">  password: TnV0c2JwMjAxOA==</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: Service</span><br><span class="line">metadata:</span><br><span class="line">  name: wordpress-mysql</span><br><span class="line">  labels:</span><br><span class="line">    app: wordpress</span><br><span class="line">spec:</span><br><span class="line">  ports:</span><br><span class="line">    - port: 3306</span><br><span class="line">  selector:</span><br><span class="line">    app: wordpress</span><br><span class="line">    tier: mysql</span><br><span class="line">  clusterIP: None</span><br><span class="line">---</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: PersistentVolumeClaim</span><br><span class="line">metadata:</span><br><span class="line">  name: mysql-pv-claim</span><br><span class="line">  labels:</span><br><span class="line">    app: wordpress</span><br><span class="line">spec:</span><br><span class="line">  accessModes:</span><br><span class="line">    - ReadWriteOnce</span><br><span class="line">  storageClassName: glusterfs-storageclass</span><br><span class="line">  resources:</span><br><span class="line">    requests:</span><br><span class="line">      storage: 20Gi</span><br><span class="line">---</span><br><span class="line">apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2</span><br><span class="line">kind: Deployment</span><br><span class="line">metadata:</span><br><span class="line">  name: wordpress-mysql</span><br><span class="line">  labels:</span><br><span class="line">    app: wordpress</span><br><span class="line">spec:</span><br><span class="line">  selector:</span><br><span class="line">    matchLabels:</span><br><span class="line">      app: wordpress</span><br><span class="line">      tier: mysql</span><br><span class="line">  strategy:</span><br><span class="line">    type: Recreate</span><br><span class="line">  template:</span><br><span class="line">    metadata:</span><br><span class="line">      labels:</span><br><span class="line">        app: wordpress</span><br><span class="line">        tier: mysql</span><br><span class="line">    spec:</span><br><span class="line">      containers:</span><br><span class="line">      - image: mysql:5.7</span><br><span class="line">        name: mysql</span><br><span class="line">        env:</span><br><span class="line">        - name: MYSQL_ROOT_PASSWORD</span><br><span class="line">          valueFrom:</span><br><span class="line">            secretKeyRef:</span><br><span class="line">              name: mysql-pass</span><br><span class="line">              key: password</span><br><span class="line">        ports:</span><br><span class="line">        - containerPort: 3306</span><br><span class="line">          name: mysql</span><br><span class="line">        volumeMounts:</span><br><span class="line">        - name: mysql-persistent-storage</span><br><span class="line">          mountPath: /var/lib/mysql</span><br><span class="line">      volumes:</span><br><span class="line">      - name: mysql-persistent-storage</span><br><span class="line">        persistentVolumeClaim:</span><br><span class="line">          claimName: mysql-pv-claim</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f mysql-secret.yaml -f mysql-deployment.yaml</span><br></pre></td></tr></table></figure>
+<h2 id="部署-Wordpress"><a href="#部署-Wordpress" class="headerlink" title="部署 Wordpress"></a>部署 Wordpress</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: Service</span><br><span class="line">metadata:</span><br><span class="line">  name: wordpress</span><br><span class="line">  labels:</span><br><span class="line">    app: wordpress</span><br><span class="line">spec:</span><br><span class="line">  ports:</span><br><span class="line">    - port: 80</span><br><span class="line">  selector:</span><br><span class="line">    app: wordpress</span><br><span class="line">    tier: frontend</span><br><span class="line">  clusterIP: None</span><br><span class="line">---</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: PersistentVolumeClaim</span><br><span class="line">metadata:</span><br><span class="line">  name: wp-pv-claim</span><br><span class="line">  labels:</span><br><span class="line">    app: wordpress</span><br><span class="line">spec:</span><br><span class="line">  accessModes:</span><br><span class="line">    - ReadWriteOnce</span><br><span class="line">  storageClassName: glusterfs-storagess</span><br><span class="line">  resources:</span><br><span class="line">    requests:</span><br><span class="line">      storage: 20Gi</span><br><span class="line">---</span><br><span class="line">apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2</span><br><span class="line">kind: Deployment</span><br><span class="line">metadata:</span><br><span class="line">  name: wordpress</span><br><span class="line">  labels:</span><br><span class="line">    app: wordpress</span><br><span class="line">spec:</span><br><span class="line">  selector:</span><br><span class="line">    matchLabels:</span><br><span class="line">      app: wordpress</span><br><span class="line">      tier: frontend</span><br><span class="line">  strategy:</span><br><span class="line">    type: Recreate</span><br><span class="line">  template:</span><br><span class="line">    metadata:</span><br><span class="line">      labels:</span><br><span class="line">        app: wordpress</span><br><span class="line">        tier: frontend</span><br><span class="line">    spec:</span><br><span class="line">      containers:</span><br><span class="line">      - image: wordpress:5.2.1-apache</span><br><span class="line">        name: wordpress</span><br><span class="line">        env:</span><br><span class="line">        - name: WORDPRESS_DB_HOST</span><br><span class="line">          value: wordpress-mysql</span><br><span class="line">        - name: WORDPRESS_DB_PASSWORD</span><br><span class="line">          valueFrom:</span><br><span class="line">            secretKeyRef:</span><br><span class="line">              name: mysql-pass</span><br><span class="line">              key: password</span><br><span class="line">        ports:</span><br><span class="line">        - containerPort: 80</span><br><span class="line">          name: wordpress</span><br><span class="line">        volumeMounts:</span><br><span class="line">        - name: wordpress-persistent-storage</span><br><span class="line">          mountPath: /var/www/html</span><br><span class="line">      volumes:</span><br><span class="line">      - name: wordpress-persistent-storage</span><br><span class="line">        persistentVolumeClaim:</span><br><span class="line">          claimName: wp-pv-claim</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: extensions/v1beta1</span><br><span class="line">kind: Ingress</span><br><span class="line">metadata:</span><br><span class="line">  name: wordpress</span><br><span class="line">spec:</span><br><span class="line">  rules:</span><br><span class="line">  - host: wp.local</span><br><span class="line">    http:</span><br><span class="line">      paths:</span><br><span class="line">      - path: /</span><br><span class="line">        backend:</span><br><span class="line">          serviceName: wordpress</span><br><span class="line">          servicePort: 80</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f wordpress-deployment.yaml -f wordpress-ingress.yaml</span><br></pre></td></tr></table></figure>
+<h3 id="验证-1"><a href="#验证-1" class="headerlink" title="验证"></a>验证</h3><p>在自己的电脑配置<code>hosts</code>，把<code>wp.local</code>指向<code>192.168.1.71</code>，浏览器访问<code>wp.local</code>如下<br><img src="/uploads/wordpress.png" alt></p>
+<h3 id="查看存储"><a href="#查看存储" class="headerlink" title="查看存储"></a>查看存储</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kubectl get pvc </span><br><span class="line">NAME             STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS             AGE</span><br><span class="line">mysql-pv-claim   Bound    pvc-729efa0e-a3d8-4333-9fb0-0fa1be0e5c5b   20Gi       RWO            glusterfs-storageclass   31m</span><br><span class="line">wp-pv-claim      Bound    pvc-ddddd1af-bb14-413e-9198-645c169e187a   20Gi       RWO            glusterfs-storageclass   18m</span><br></pre></td></tr></table></figure>
+<p>到此，我们就通过<code>traefik</code>作为反向代理，部署了<code>Mysql</code>+<code>Wordpress</code>，使用<code>GlusterFS</code>分布式存储。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>一分、两分都是爱！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>Donate</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/wechatpay.jpg" alt="Darren WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+    
+
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/k8s/" rel="tag"># k8s</a>
+          
+            <a href="/tags/gluster/" rel="tag"># gluster</a>
+          
+            <a href="/tags/heketi/" rel="tag"># heketi</a>
+          
+            <a href="/tags/mysql/" rel="tag"># mysql</a>
+          
+            <a href="/tags/wordpress/" rel="tag"># wordpress</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/24/使用-kubeadm-在-VMW-部署-k8s-集群之使用-kubeadm-部署-k8s-集群/" rel="next" title="使用 kubeadm 在 VMW 部署 k8s 集群之使用 kubeadm 部署 k8s 集群">
+                <i class="fa fa-chevron-left"></i> 使用 kubeadm 在 VMW 部署 k8s 集群之使用 kubeadm 部署 k8s 集群
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/19/自动添加阿里云ECS安全组规则/" rel="prev" title="自动添加阿里云ECS安全组规则">
+                自动添加阿里云ECS安全组规则 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+<!-- 谷歌广告 -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 头部广告 -->
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4696419290281923" data-ad-slot="6493204046" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/avatar.jpeg" alt="Darren">
+            
+              <p class="site-author-name" itemprop="name">Darren</p>
+              <p class="site-description motion-element" itemprop="description">运维工作中遇到的问题总结，新知识的记录。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">38</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">33</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/zfqajd" title="GitHub &rarr; https://github.com/zfqajd" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:zfqajd@gmail.com" title="E-Mail &rarr; mailto:zfqajd@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#添加glusterfs到k8s集群"><span class="nav-number">1.</span> <span class="nav-text">添加glusterfs到k8s集群</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建StorageClass"><span class="nav-number">2.</span> <span class="nav-text">创建StorageClass</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用traefik作为ingress-control"><span class="nav-number">3.</span> <span class="nav-text">使用traefik作为ingress control</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#验证"><span class="nav-number">3.1.</span> <span class="nav-text">验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#部署-MySQL"><span class="nav-number">4.</span> <span class="nav-text">部署 MySQL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#部署-Wordpress"><span class="nav-number">5.</span> <span class="nav-text">部署 Wordpress</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#验证-1"><span class="nav-number">5.1.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查看存储"><span class="nav-number">5.2.</span> <span class="nav-text">查看存储</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+      <!-- 谷歌广告 -->
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 头部广告 -->
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4696419290281923" data-ad-slot="6493204046" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">  <a href="http://www.miitbeian.gov.cn" rel="noopener" target="_blank">闽ICP备15015461号-1 </a>&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Darren</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail,link';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: true,
+    notify: true,
+    appId: 'nX56xwqanaB776cO2XaRfICK-gzGzoHsz',
+    appKey: 'NQSiiODA5jdKz0MUTaxRcdm8',
+    placeholder: 'o( =•ω•= )m客官别走！我们坐下来好好聊聊～～～',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+</script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+<!-- Google AdSense 广告代码 -->
+<script data-ad-client="ca-pub-4696419290281923" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+  <meta name="description" content="网站的一些素材目前存放在 Azure Blob 上，后期要迁移到 Aliyun OSS ，先做了迁移测试记录下。">
+<meta name="keywords" content="ossimport">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用Ossimport迁移Azure blob数据到OSS">
+<meta property="og:url" content="https://yeadoc.cn/2018/08/28/利用Ossimport迁移Azure-blob数据到OSS/index.html">
+<meta property="og:site_name" content="Yeadoc">
+<meta property="og:description" content="网站的一些素材目前存放在 Azure Blob 上，后期要迁移到 Aliyun OSS ，先做了迁移测试记录下。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://yeadoc.cn/uploads/create-ram-user.png">
+<meta property="og:image" content="https://yeadoc.cn/uploads/create-ram-ak.png">
+<meta property="og:image" content="https://yeadoc.cn/uploads/add-policy.png">
+<meta property="og:image" content="https://yeadoc.cn/uploads/create-bucket.png">
+<meta property="og:image" content="https://yeadoc.cn/uploads/data.png">
+<meta property="og:image" content="https://yeadoc.cn/uploads/ossfs.png">
+<meta property="og:updated_time" content="2019-06-24T01:29:50.221Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用Ossimport迁移Azure blob数据到OSS">
+<meta name="twitter:description" content="网站的一些素材目前存放在 Azure Blob 上，后期要迁移到 Aliyun OSS ，先做了迁移测试记录下。">
+<meta name="twitter:image" content="https://yeadoc.cn/uploads/create-ram-user.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://yeadoc.cn/2018/08/28/利用Ossimport迁移Azure-blob数据到OSS/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>利用Ossimport迁移Azure blob数据到OSS | Yeadoc</title>
+  
+
+
+
+
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?e0b9da7819be2e9fbaf7802d2066a47a";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yeadoc</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">亿文-一位运维工程师的文档库</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>About</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-message">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/message/" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>Message</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yeadoc.cn/2018/08/28/利用Ossimport迁移Azure-blob数据到OSS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Darren">
+      <meta itemprop="description" content="运维工作中遇到的问题总结，新知识的记录。">
+      <meta itemprop="image" content="/uploads/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yeadoc">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">利用Ossimport迁移Azure blob数据到OSS
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-08-28 11:06:10" itemprop="dateCreated datePublished" datetime="2018-08-28T11:06:10+08:00">2018-08-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-06-24 09:29:50" itemprop="dateModified" datetime="2019-06-24T09:29:50+08:00">2019-06-24</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/OSS/" itemprop="url" rel="index"><span itemprop="name">OSS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2018/08/28/利用Ossimport迁移Azure-blob数据到OSS/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2018/08/28/利用Ossimport迁移Azure-blob数据到OSS/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>网站的一些素材目前存放在 Azure Blob 上，后期要迁移到 Aliyun OSS ，先做了迁移测试记录下。<a id="more"></a></p>
+<h2 id="创建用于管理-OSS-的-RAM-用户"><a href="#创建用于管理-OSS-的-RAM-用户" class="headerlink" title="创建用于管理 OSS 的 RAM 用户"></a>创建用于管理 OSS 的 RAM 用户</h2><p><img src="/uploads/create-ram-user.png" alt="创建RAM用户"><br><img src="/uploads/create-ram-ak.png" alt="新建AK"><br><img src="/uploads/add-policy.png" alt="授权策略"></p>
+<h2 id="创建存储空间"><a href="#创建存储空间" class="headerlink" title="创建存储空间"></a>创建存储空间</h2><p><img src="/uploads/create-bucket.png" alt="创建存储空间"></p>
+<h2 id="配置-ossimport"><a href="#配置-ossimport" class="headerlink" title="配置 ossimport"></a>配置 ossimport</h2><p>OssImport 有单机和分布式两种部署方式，我们数据不多，用单机模式就可以。<br>下载 ossimport<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget -O /tmp/ossimport-2.3.1.zip http://gosspublic.alicdn.com/ossimport/standalone/ossimport-2.3.1.zip?spm=a2c4g.11186623.2.1.282729d8oUFSR2&amp;file=ossimport-2.3.1.zip</span><br><span class="line">unzip /tmp/ossimport-2.3.1.zip -d /tmp/ossimport/</span><br></pre></td></tr></table></figure></p>
+<p>修改 local_job.cfg 配置<br><code>vim /tmp/ossimport/conf/local_job.cfg</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">isIncremental=false</span><br><span class="line">incrementalModeInterval=86400</span><br><span class="line"># 同步源类型选择 azure</span><br><span class="line">srcType=azure</span><br><span class="line"># azure blob AccessKey 是存储帐户名称</span><br><span class="line">srcAccessKey=存储帐户名称</span><br><span class="line">srcSecretKey=密钥</span><br><span class="line"># azure blob 连接字符串中的 EndpointSuffix</span><br><span class="line">srcDomain=core.chinacloudapi.cn</span><br><span class="line"># azure blob 填写容器名称</span><br><span class="line">srcBucket=要迁移的容器名称</span><br><span class="line">srcPrefix=</span><br><span class="line"># 创建 RAM 用户时创建的 AccessKey</span><br><span class="line">destAccessKey=OSS AccessKeyID</span><br><span class="line">destSecretKey=OSS AccessKeySecret</span><br><span class="line"># OSS 内网 EndPoint</span><br><span class="line">destDomain=http://oss-cn-shanghai-internal.aliyuncs.com</span><br><span class="line"># 存储空间名称</span><br><span class="line">destBucket=yeadoc</span><br><span class="line">destPrefix=存放目录</span><br><span class="line">appId=0</span><br><span class="line">httpListFilePath=c:/example/http.list</span><br><span class="line">httpPrefixColumn=1</span><br><span class="line">relativePathColumn=2</span><br><span class="line">jobName=local_test</span><br><span class="line">jobType=import</span><br><span class="line">importSince=0</span><br><span class="line">lastModify=0</span><br><span class="line">isSkipExistFile=false</span><br><span class="line">taskObjectCountLimit=10000</span><br><span class="line">taskObjectSizeLimit=1000000000</span><br><span class="line">scanThreadCount=10000</span><br><span class="line">maxMultiThreadScanDepth=1</span><br><span class="line">multipartUploadThreshold=150m</span><br><span class="line">multipartUploadPartSize=50m</span><br><span class="line">uploadThreadNumPerLargeFile=3</span><br><span class="line">isServerSideEncryption=false</span><br><span class="line">isAllowSymbolicLink=false</span><br><span class="line">getObjectMetaMode=stat</span><br><span class="line">isAuditAfterImport=true</span><br><span class="line">auditMode=general</span><br></pre></td></tr></table></figure></p>
+<h2 id="迁移数据"><a href="#迁移数据" class="headerlink" title="迁移数据"></a>迁移数据</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /tmp/ossimport/</span><br><span class="line">bash import.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br></pre></td><td class="code"><pre><span class="line">Clean the previous job, Yes or No: Yes</span><br><span class="line">Stop import service completed.</span><br><span class="line">delete jobs dir:./master/jobs/local_test/</span><br><span class="line">Clean job:local_test completed.</span><br><span class="line">submit job:/var/jenkins_home/scripts/oss/conf/local_job.cfg</span><br><span class="line">submit job:local_test success!</span><br><span class="line">Start import service completed.</span><br><span class="line">-------------- job stats ---------------</span><br><span class="line">---------------- job stat ------------------</span><br><span class="line">JobName:local_test</span><br><span class="line">JobState:Running</span><br><span class="line">PendingTasks:1</span><br><span class="line">DispatchedTasks:0</span><br><span class="line">RunningTasks:0</span><br><span class="line">SucceedTasks:0</span><br><span class="line">FailedTasks:0</span><br><span class="line">ScanFinished:true</span><br><span class="line">RunningTasks Progress:</span><br><span class="line">----------------------------------------</span><br><span class="line">-------------- job stats ---------------</span><br><span class="line">---------------- job stat ------------------</span><br><span class="line">JobName:local_test</span><br><span class="line">JobState:Running</span><br><span class="line">PendingTasks:0</span><br><span class="line">DispatchedTasks:1</span><br><span class="line">RunningTasks:0</span><br><span class="line">SucceedTasks:0</span><br><span class="line">FailedTasks:0</span><br><span class="line">ScanFinished:true</span><br><span class="line">RunningTasks Progress:</span><br><span class="line">----------------------------------------</span><br><span class="line">-------------- job stats ---------------</span><br><span class="line">---------------- job stat ------------------</span><br><span class="line">JobName:local_test</span><br><span class="line">JobState:Running</span><br><span class="line">PendingTasks:0</span><br><span class="line">DispatchedTasks:1</span><br><span class="line">RunningTasks:1</span><br><span class="line">SucceedTasks:0</span><br><span class="line">FailedTasks:0</span><br><span class="line">ScanFinished:true</span><br><span class="line">RunningTasks Progress:</span><br><span class="line">D503708408CC8FCA0E911D188BE4FDCC_1535437968558:6962090/6962090 15/15</span><br><span class="line">----------------------------------------</span><br><span class="line">-------------- job stats ---------------</span><br><span class="line">---------------- job stat ------------------</span><br><span class="line">JobName:local_test</span><br><span class="line">JobState:Running</span><br><span class="line">PendingTasks:0</span><br><span class="line">DispatchedTasks:1</span><br><span class="line">RunningTasks:1</span><br><span class="line">SucceedTasks:0</span><br><span class="line">FailedTasks:0</span><br><span class="line">ScanFinished:true</span><br><span class="line">RunningTasks Progress:</span><br><span class="line">D503708408CC8FCA0E911D188BE4FDCC_1535437968558:6962090/6962090 15/15</span><br><span class="line">----------------------------------------</span><br><span class="line">-------------- job stats ---------------</span><br><span class="line">---------------- job stat ------------------</span><br><span class="line">JobName:local_test</span><br><span class="line">JobState:Running</span><br><span class="line">PendingTasks:0</span><br><span class="line">DispatchedTasks:1</span><br><span class="line">RunningTasks:0</span><br><span class="line">SucceedTasks:0</span><br><span class="line">FailedTasks:0</span><br><span class="line">ScanFinished:true</span><br><span class="line">RunningTasks Progress:</span><br><span class="line">----------------------------------------</span><br><span class="line">-------------- job stats ---------------</span><br><span class="line">---------------- job stat ------------------</span><br><span class="line">JobName:local_test</span><br><span class="line">JobState:Running</span><br><span class="line">PendingTasks:0</span><br><span class="line">DispatchedTasks:1</span><br><span class="line">RunningTasks:0</span><br><span class="line">SucceedTasks:0</span><br><span class="line">FailedTasks:0</span><br><span class="line">ScanFinished:true</span><br><span class="line">RunningTasks Progress:</span><br><span class="line">----------------------------------------</span><br><span class="line">-------------- job stats ---------------</span><br><span class="line">---------------- job stat ------------------</span><br><span class="line">JobName:local_test</span><br><span class="line">JobState:Running</span><br><span class="line">PendingTasks:0</span><br><span class="line">DispatchedTasks:1</span><br><span class="line">RunningTasks:0</span><br><span class="line">SucceedTasks:0</span><br><span class="line">FailedTasks:0</span><br><span class="line">ScanFinished:true</span><br><span class="line">RunningTasks Progress:</span><br><span class="line">----------------------------------------</span><br><span class="line">-------------- job stats ---------------</span><br><span class="line">---------------- job stat ------------------</span><br><span class="line">JobName:local_test</span><br><span class="line">JobState:Running</span><br><span class="line">PendingTasks:0</span><br><span class="line">DispatchedTasks:1</span><br><span class="line">RunningTasks:0</span><br><span class="line">SucceedTasks:0</span><br><span class="line">FailedTasks:0</span><br><span class="line">ScanFinished:true</span><br><span class="line">RunningTasks Progress:</span><br><span class="line">----------------------------------------</span><br><span class="line">-------------- job stats ---------------</span><br><span class="line">---------------- job stat ------------------</span><br><span class="line">JobName:local_test</span><br><span class="line">JobState:Running</span><br><span class="line">PendingTasks:0</span><br><span class="line">DispatchedTasks:1</span><br><span class="line">RunningTasks:0</span><br><span class="line">SucceedTasks:0</span><br><span class="line">FailedTasks:0</span><br><span class="line">ScanFinished:true</span><br><span class="line">RunningTasks Progress:</span><br><span class="line">----------------------------------------</span><br><span class="line">-------------- job stats ---------------</span><br><span class="line">---------------- job stat ------------------</span><br><span class="line">JobName:local_test</span><br><span class="line">JobState:Succeed</span><br><span class="line">PendingTasks:0</span><br><span class="line">DispatchedTasks:0</span><br><span class="line">RunningTasks:0</span><br><span class="line">SucceedTasks:1</span><br><span class="line">FailedTasks:0</span><br><span class="line">ScanFinished:true</span><br><span class="line">RunningTasks Progress:</span><br><span class="line">----------------------------------------</span><br><span class="line">Import to oss completed.</span><br><span class="line">Stop import service, Yes or No: Yes</span><br><span class="line">import.sh: line 48: 21132 Killed                  nohup java $&#123;java_heap_max&#125; $&#123;import_opts&#125; -jar $&#123;import_jar&#125; -c $&#123;import_sys_conf&#125; start &gt; $&#123;work_dir&#125;/logs/ossimport2.log 2&gt;&amp;1</span><br><span class="line">Stop import service completed.</span><br></pre></td></tr></table></figure>
+<p>在 文件管理 可以看到数据已经迁移过来了。<br><img src="/uploads/data.png" alt="data"></p>
+<h2 id="上传或同步文件到-OSS"><a href="#上传或同步文件到-OSS" class="headerlink" title="上传或同步文件到 OSS"></a>上传或同步文件到 OSS</h2><p>Azure blob 使用 rclone 上传(rclone copy)或同步(rclone sync)，但是 rclone 不支持 Aliyun OSS，ossutil 不支持同步。只能曲线救国，用 ossfs 把 OSS Bucket 挂载到本地，rclone 使用 sftp 去上传或同步。</p>
+<h3 id="安装-ossfs"><a href="#安装-ossfs" class="headerlink" title="安装 ossfs"></a>安装 ossfs</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget -O /tmp/ossfs.rpm http://docs-aliyun.cn-hangzhou.oss.aliyun-inc.com/assets/attach/32196/cn_zh/1527232195135/ossfs_1.80.5_centos7.0_x86_64.rpm?spm=a2c4g.11186623.2.3.1f0c7358TpxVk9&amp;file=ossfs_1.80.5_centos7.0_x86_64.rpm</span><br><span class="line">yum localinstall /tmp/ossfs.rpm</span><br></pre></td></tr></table></figure>
+<h3 id="配置-ossfs"><a href="#配置-ossfs" class="headerlink" title="配置 ossfs"></a>配置 ossfs</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo 存储空间名称:AccessKeyID:AccessKeySecret &gt; /etc/passwd-ossfs</span><br><span class="line">chmod 640 /etc/passwd-ossfs</span><br></pre></td></tr></table></figure>
+<h3 id="挂载-OSS-Bucket"><a href="#挂载-OSS-Bucket" class="headerlink" title="挂载 OSS Bucket"></a>挂载 OSS Bucket</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir /ossfs</span><br><span class="line">ossfs yeadoc /ossfs -ourl=http://oss-cn-shanghai-internal.aliyuncs.com</span><br></pre></td></tr></table></figure>
+<p>查看已经挂载成功。<br><img src="/uploads/ossfs.png" alt="ossfs"></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>一分、两分都是爱！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>Donate</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/uploads/wechatpay.jpg" alt="Darren WeChat Pay">
+        <p>WeChat Pay</p>
+      </div>
+    
+
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ossimport/" rel="tag"># ossimport</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/08/Docker-学习笔记之一/" rel="next" title="Docker 学习笔记之一">
+                <i class="fa fa-chevron-left"></i> Docker 学习笔记之一
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/13/搭建部署-docker-registry-私有仓库/" rel="prev" title="搭建部署 docker registry 私有仓库">
+                搭建部署 docker registry 私有仓库 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+<!-- 谷歌广告 -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 头部广告 -->
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4696419290281923" data-ad-slot="6493204046" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/uploads/avatar.jpeg" alt="Darren">
+            
+              <p class="site-author-name" itemprop="name">Darren</p>
+              <p class="site-description motion-element" itemprop="description">运维工作中遇到的问题总结，新知识的记录。</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">38</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">33</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/zfqajd" title="GitHub &rarr; https://github.com/zfqajd" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:zfqajd@gmail.com" title="E-Mail &rarr; mailto:zfqajd@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#创建用于管理-OSS-的-RAM-用户"><span class="nav-number">1.</span> <span class="nav-text">创建用于管理 OSS 的 RAM 用户</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建存储空间"><span class="nav-number">2.</span> <span class="nav-text">创建存储空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#配置-ossimport"><span class="nav-number">3.</span> <span class="nav-text">配置 ossimport</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#迁移数据"><span class="nav-number">4.</span> <span class="nav-text">迁移数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#上传或同步文件到-OSS"><span class="nav-number">5.</span> <span class="nav-text">上传或同步文件到 OSS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-ossfs"><span class="nav-number">5.1.</span> <span class="nav-text">安装 ossfs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置-ossfs"><span class="nav-number">5.2.</span> <span class="nav-text">配置 ossfs</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#挂载-OSS-Bucket"><span class="nav-number">5.3.</span> <span class="nav-text">挂载 OSS Bucket</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+      <!-- 谷歌广告 -->
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- 头部广告 -->
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4696419290281923" data-ad-slot="6493204046" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">  <a href="http://www.miitbeian.gov.cn" rel="noopener" target="_blank">闽ICP备15015461号-1 </a>&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Darren</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail,link';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: true,
+    notify: true,
+    appId: 'nX56xwqanaB776cO2XaRfICK-gzGzoHsz',
+    appKey: 'NQSiiODA5jdKz0MUTaxRcdm8',
+    placeholder: 'o( =•ω•= )m客官别走！我们坐下来好好聊聊～～～',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+</script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
