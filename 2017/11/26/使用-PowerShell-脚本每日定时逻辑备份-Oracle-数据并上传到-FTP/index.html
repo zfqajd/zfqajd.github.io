@@ -1,99 +1,24 @@
 <!DOCTYPE html>
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-<html class="theme-next pisces use-motion" lang="zh-Hans">
-<head><meta name="generator" content="Hexo 3.9.0">
+<html lang="zh-Hans">
+<head>
   <meta charset="UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
 
 
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
-
-<link rel="stylesheet" href="/css/main.css?v=7.0.0">
-
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
-
-
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
-
-
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
-
-
-  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
-
-
-
-
-
-
-
-<script id="hexo.configurations">
-  var NexT = window.NexT || {};
-  var CONFIG = {
-    root: '/',
-    scheme: 'Pisces',
-    version: '7.0.0',
-    sidebar: {"position":"right","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
-    fancybox: false,
-    fastclick: false,
-    lazyload: false,
-    tabs: true,
-    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
-    algolia: {
-      applicationID: '',
-      apiKey: '',
-      indexName: '',
-      hits: {"per_page":10},
-      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
-    }
-  };
-</script>
-
-
-  
-
-
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yeadoc.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
 
   <meta name="description" content="脚本使用第三方 PowerShell 模块 PSFTP，下载地址：">
 <meta name="keywords" content="Oracle">
@@ -108,18 +33,16 @@
 <meta name="twitter:title" content="使用 PowerShell 脚本每日定时逻辑备份 Oracle 数据并上传到 FTP">
 <meta name="twitter:description" content="脚本使用第三方 PowerShell 模块 PSFTP，下载地址：">
 
+<link rel="canonical" href="https://yeadoc.cn/2017/11/26/使用-PowerShell-脚本每日定时逻辑备份-Oracle-数据并上传到-FTP/">
 
 
-
-
-
-  <link rel="canonical" href="https://yeadoc.cn/2017/11/26/使用-PowerShell-脚本每日定时逻辑备份-Oracle-数据并上传到-FTP/">
-
-
-
-<script id="page.configurations">
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
   };
 </script>
 
@@ -131,25 +54,8 @@
 
 
 
-  <script>
-    var _hmt = _hmt || [];
-    (function() {
-      var hm = document.createElement("script");
-      hm.src = "https://hm.baidu.com/hm.js?e0b9da7819be2e9fbaf7802d2066a47a";
-      var s = document.getElementsByTagName("script")[0];
-      s.parentNode.insertBefore(hm, s);
-    })();
-  </script>
-
-
-
-
-
-
-
   <noscript>
   <style>
-  .use-motion .motion-element,
   .use-motion .brand,
   .use-motion .menu-item,
   .sidebar-inner,
@@ -158,9 +64,8 @@
   .use-motion .comments,
   .use-motion .post-header,
   .use-motion .post-body,
-  .use-motion .collection-title { opacity: initial; }
+  .use-motion .collection-header { opacity: initial; }
 
-  .use-motion .logo,
   .use-motion .site-title,
   .use-motion .site-subtitle {
     opacity: initial;
@@ -174,167 +79,64 @@
 
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
-
-  
-  
-    
-  
-
-  <div class="container sidebar-position-right page-post-detail">
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
     <div class="headband"></div>
 
-    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-wrapper">
-  <div class="site-meta">
-    
-
-    <div class="custom-logo-site-title">
-      <a href="/" class="brand" rel="start">
-        <span class="logo-line-before"><i></i></span>
-        <span class="site-title">Yeadoc</span>
-        <span class="logo-line-after"><i></i></span>
-      </a>
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
     </div>
-    
-      
-        <p class="site-subtitle">亿文-一位运维工程师的文档库</p>
-      
-    
-    
   </div>
 
-  <div class="site-nav-toggle">
-    <button aria-label="Toggle navigation bar">
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-      <span class="btn-bar"></span>
-    </button>
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Yeadoc</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">亿文-一位运维工程师的文档库</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
   </div>
 </div>
 
 
 
+
 <nav class="site-nav">
-  
-    <ul id="menu" class="menu">
-      
-        
-        
-        
-          
-          <li class="menu-item menu-item-home">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
 
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
 
   </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-about">
+        <li class="menu-item menu-item-about">
 
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>About</a>
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
 
   </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-tags">
+        <li class="menu-item menu-item-tags">
 
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>Tags</a>
 
   </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-categories">
+        <li class="menu-item menu-item-archives">
 
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
 
   </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-archives">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
-
-  </li>
-        
-        
-        
-          
-          <li class="menu-item menu-item-message">
-
-    
-    
-    
-      
-    
-
-    
-
-    <a href="/message/" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>Message</a>
-
-  </li>
-
-      
-      
-    </ul>
-  
-
-  
-
-  
+  </ul>
 </nav>
 
-
-
-  
 
 
 
@@ -342,155 +144,70 @@
     </header>
 
     
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
 
 
-    <main id="main" class="main">
+    <main class="main">
       <div class="main-inner">
         <div class="content-wrap">
           
+
+          <div class="content post posts-expand">
             
 
-          
-          <div id="content" class="content">
-            
-
-  <div id="posts" class="posts-expand">
     
-
-  
-
   
   
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
     <link itemprop="mainEntityOfPage" href="https://yeadoc.cn/2017/11/26/使用-PowerShell-脚本每日定时逻辑备份-Oracle-数据并上传到-FTP/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
       <meta itemprop="name" content="Darren">
       <meta itemprop="description" content="运维工作中遇到的问题总结，新知识的记录。">
-      <meta itemprop="image" content="/uploads/avatar.jpeg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="Yeadoc">
     </span>
-
-    
       <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">使用 PowerShell 脚本每日定时逻辑备份 Oracle 数据并上传到 FTP
-
-              
-            
-          </h1>
-        
+        <h1 class="post-title" itemprop="name headline">
+          使用 PowerShell 脚本每日定时逻辑备份 Oracle 数据并上传到 FTP
+        </h1>
 
         <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
+            <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
+              <span class="post-meta-item-text">Posted on</span>
 
               <time title="Created: 2017-11-26 11:34:01" itemprop="dateCreated datePublished" datetime="2017-11-26T11:34:01+08:00">2017-11-26</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
+            </span>
+              <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
+                <span class="post-meta-item-text">Edited on</span>
                 <time title="Modified: 2019-06-24 09:29:50" itemprop="dateModified" datetime="2019-06-24T09:29:50+08:00">2019-06-24</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
+              </span>
+            <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
               </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-              
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Oracle/" itemprop="url" rel="index"><span itemprop="name">Oracle</span></a>
                 </span>
-            
-                <a href="/2017/11/26/使用-PowerShell-脚本每日定时逻辑备份-Oracle-数据并上传到-FTP/#comments" itemprop="discussionUrl">
-                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2017/11/26/使用-PowerShell-脚本每日定时逻辑备份-Oracle-数据并上传到-FTP/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-            <span class="post-meta-divider">|</span>
-            <span class="post-meta-item-icon">
-            <i class="fa fa-eye"></i>
-             Views:  
-            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
             </span>
-          
-
-          
 
           
 
         </div>
       </header>
-    
 
     
     
@@ -498,418 +215,154 @@
     <div class="post-body" itemprop="articleBody">
 
       
-      
-
-      
         <p>脚本使用第三方 PowerShell 模块 <a href="https://gallery.technet.microsoft.com/scriptcenter/PowerShell-FTP-Client-db6fe0cb" target="_blank" rel="noopener">PSFTP</a>，下载地址：<a id="more"></a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://gallery.technet.microsoft.com/scriptcenter/PowerShell-FTP-Client-db6fe0cb</span><br></pre></td></tr></table></figure></p>
 <p>脚本内容：<br><figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Author: xo9</span></span><br><span class="line"><span class="comment"># Purpose: Windows 平台使用 PowerShell 脚本每日定时逻辑备份 Oracle 数据并压缩上传到 FTP。</span></span><br><span class="line">           本地保留<span class="number">2</span>天，FTP 上按日期创建文件夹，数据保留<span class="number">5</span>天。</span><br><span class="line"><span class="comment"># Created: 2017/04/07</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义脚本变量</span></span><br><span class="line"><span class="variable">$env:ORACLE_SID</span>=<span class="string">"orclstd"</span></span><br><span class="line"><span class="variable">$NOWDATE</span>=<span class="built_in">Get-Date</span> -UFormat %Y%m%d</span><br><span class="line"><span class="variable">$NOWTIME</span>=<span class="built_in">Get-Date</span> -UFormat %Y%m%d%H%M%S</span><br><span class="line"><span class="variable">$OLDDATE</span>=((<span class="built_in">Get-Date</span>).AddDays(-<span class="number">2</span>)).ToString(<span class="string">'yyyyMMdd'</span>)</span><br><span class="line"><span class="variable">$FTPOLDDATE</span>=((<span class="built_in">Get-Date</span>).AddDays(-<span class="number">5</span>).ToString(<span class="string">'yyyyMMdd'</span>))</span><br><span class="line"><span class="variable">$USERNAME</span>=<span class="string">"数据库用户名"</span></span><br><span class="line"><span class="variable">$PASSWORD</span>=<span class="string">"数据库密码"</span></span><br><span class="line"><span class="variable">$NEWDBNAME</span>=<span class="string">"数据库名_"</span>+<span class="variable">$NOWTIME</span></span><br><span class="line"><span class="variable">$OLDDBNAME</span>=<span class="string">"数据库名_"</span>+<span class="variable">$OLDDATE</span></span><br><span class="line"><span class="variable">$winrar</span>=<span class="string">"C:\Program Files (x86)\WinRAR\rar.exe"</span></span><br><span class="line"><span class="variable">$BACKUPDIR</span>=<span class="string">"d:\dump"</span> <span class="comment">#备份目录</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ((<span class="built_in">Test-Path</span> -Path <span class="variable">$BACKUPDIR</span>) <span class="nomarkup">-eq</span> <span class="literal">$false</span>) &#123;</span><br><span class="line">  <span class="built_in">New-Item</span> -Type directory -Path <span class="variable">$BACKUPDIR</span></span><br><span class="line">  <span class="comment">#如果备份目录不存在，则创建。</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ((<span class="built_in">Test-Path</span> -Path <span class="variable">$BACKUPDIR</span>\<span class="variable">$OLDDBNAME</span>*.dmp) <span class="nomarkup">-eq</span> <span class="literal">$true</span>) &#123;</span><br><span class="line">  <span class="built_in">Remove-Item</span> -Force -Path <span class="variable">$BACKUPDIR</span>\<span class="variable">$OLDDBNAME</span>*.dmp</span><br><span class="line">  <span class="built_in">Remove-Item</span> -Force -Path <span class="variable">$BACKUPDIR</span>\<span class="variable">$OLDDBNAME</span>*.log</span><br><span class="line">  <span class="built_in">Remove-Item</span> -Force -Path <span class="variable">$BACKUPDIR</span>\<span class="variable">$OLDDBNAME</span>*.rar</span><br><span class="line">  <span class="comment">#删除旧的 Oracle 备份数据。</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除归档日志</span></span><br><span class="line">rman TARGET / cmdfile=d:\dump\OracleArchLogClear.rman log=d:\dump\<span class="variable">$NEWDBNAME</span>.rman.log</span><br><span class="line"></span><br><span class="line"><span class="comment"># exp备份并压缩dmp数据</span></span><br><span class="line">expdp <span class="variable">$USERNAME</span>/<span class="variable">$PASSWORD</span>@<span class="variable">$env:ORACLE_SID</span> directory=dump_dir dumpfile=<span class="variable">$NEWDBNAME</span>.dmp logfile=<span class="variable">$NEWDBNAME</span>.log</span><br><span class="line">&amp;<span class="variable">$winrar</span> a <span class="string">"<span class="variable">$NEWDBNAME</span>.rar"</span> <span class="string">"NEWDBNAME.dmp"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 上传文件到 FTP</span></span><br><span class="line"><span class="built_in">Import-Module</span> PSFTP</span><br><span class="line"><span class="variable">$FTP_HOST</span>=<span class="string">"FTP服务器地址：FTP服务器端口"</span></span><br><span class="line"><span class="variable">$FTP_USERNAME</span>=<span class="string">"FTP用户名"</span></span><br><span class="line"><span class="variable">$FTP_PASSWORD</span>=<span class="built_in">ConvertTo-SecureString</span> <span class="string">"FTP密码"</span> -AsPlainText -Force</span><br><span class="line"></span><br><span class="line"><span class="comment"># 建立FTP连接</span></span><br><span class="line"><span class="variable">$Credentials</span>=<span class="built_in">New-Object</span> System.Management.Automation.PSCredential(<span class="variable">$FTP_USERNAME</span>,<span class="variable">$FTP_PASSWORD</span>)</span><br><span class="line">Set-FTPConnection -Credentials <span class="variable">$Credentials</span> -Server ftp://<span class="variable">$FTP_HOST</span> -Session oradmpSession -UseBinary -KeepAlive -ignoreCert</span><br><span class="line"><span class="variable">$Session</span>=Get-FTPConnection -Session oradmpSession</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$Session</span> <span class="nomarkup">-eq</span> <span class="literal">$null</span>) &#123;</span><br><span class="line">  Set-FTPConnection -Credentials <span class="variable">$Credentials</span> -Server ftp://<span class="variable">$FTP_HOST</span> -Session oradmpSession -UsePassive -UseBinary -KeepAlive -ignoreCert</span><br><span class="line">  <span class="comment">#如果连接失败，则以主动连接重新连接。</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ((Get-FTPChildItem -Session <span class="variable">$Session</span> -Path / -ErrorAction SilentlyContinue -Filter <span class="variable">$NOWDATE</span>) <span class="nomarkup">-eq</span> <span class="literal">$null</span>) &#123;</span><br><span class="line">  New-FTPItem -Session <span class="variable">$Session</span> -Path / -Name <span class="variable">$NOWDATE</span></span><br><span class="line">  <span class="comment">#如果以当天日期命名的文件夹不存在，则创建。</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">#foreach($Filename in (Get-ChildItem -Path $BACKUPDIR\$NOWDATE -Recurse)) &#123;</span></span><br><span class="line">    Add-FTPItem -Session <span class="variable">$Session</span> -Overwrite -BufferSize <span class="number">102400</span> -Path /<span class="variable">$NOWDATE</span> -LocalPath <span class="variable">$BACKUPDIR</span>\<span class="variable">$NEWDBNAME</span>.rar</span><br><span class="line">    <span class="comment">#上传文件。</span></span><br><span class="line"><span class="comment">#&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ((Get-FTPChildItem -Session <span class="variable">$Session</span> -Path / -ErrorAction SilentlyContinue -Filter <span class="variable">$FTPOLDDATE</span>) <span class="nomarkup">-ne</span> <span class="literal">$null</span>) &#123;</span><br><span class="line">  Remove-FTPItem -Path /<span class="variable">$FTPOLDDATE</span> -Session <span class="variable">$Session</span> -Recurse</span><br><span class="line">  <span class="comment">#删除5天前的数据。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>OracleArchLogClear.rman 内容<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">ARCHIVELOG</span> <span class="keyword">ALL</span> COMPLETED <span class="keyword">BEFORE</span> <span class="string">'SYSDATE-7'</span>;</span><br><span class="line">EXIT;</span><br></pre></td></tr></table></figure></p>
 
-      
     </div>
 
     
-
-    
     
     
 
-    
-
-    
-      
-    
-    
-      <div>
-        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
-  <div>一分、两分都是爱！</div>
-  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
-    <span>Donate</span>
-  </button>
-  <div id="QR" style="display: none;">
-
-    
-      <div id="wechat" style="display: inline-block">
-        <img id="wechat_qr" src="/uploads/wechatpay.jpg" alt="Darren WeChat Pay">
-        <p>WeChat Pay</p>
-      </div>
-    
-
-    
-
-    
-
-  </div>
-</div>
-
-      </div>
-    
-
-    
-
-    <footer class="post-footer">
-      
-        <div class="post-tags">
-          
-            <a href="/tags/Oracle/" rel="tag"># Oracle</a>
-          
-        </div>
-      
-
-      
-      
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2017/11/26/Run-SZ-RZ-on-Mac-With-iTerm2/" rel="next" title="Run SZ RZ on Mac With iTerm2">
-                <i class="fa fa-chevron-left"></i> Run SZ RZ on Mac With iTerm2
-              </a>
-            
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Oracle/" rel="tag"># Oracle</a>
           </div>
 
-          <span class="post-nav-divider"></span>
+        
 
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/11/26/设置-iTerm2-自动登录-JumpServer-跳板机/" rel="prev" title="设置 iTerm2 自动登录 JumpServer 跳板机">
-                设置 iTerm2 自动登录 JumpServer 跳板机 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
 
-      
-      
-    </footer>
-  </div>
-  
-  
-  
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/11/26/Run-SZ-RZ-on-Mac-With-iTerm2/" rel="prev" title="Run SZ RZ on Mac With iTerm2">
+      <i class="fa fa-chevron-left"></i> Run SZ RZ on Mac With iTerm2
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/11/26/设置-iTerm2-自动登录-JumpServer-跳板机/" rel="next" title="设置 iTerm2 自动登录 JumpServer 跳板机">
+      设置 iTerm2 自动登录 JumpServer 跳板机 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
   </article>
+  
+  
+  
 
-
-  </div>
 
 
           </div>
           
-
-  
-    <div class="comments" id="comments">
-    </div>
-
-  
-
-
-
-        </div>
-        
-          
-  
-  <div class="sidebar-toggle">
-    <div class="sidebar-toggle-line-wrap">
-      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
-      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
-    </div>
-  </div>
-
-  <aside id="sidebar" class="sidebar">
-    
-    <div class="sidebar-inner">
-
-      
-
-      
-
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
-        <div class="site-overview">
-          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-            
-              <img class="site-author-image" itemprop="image" src="/uploads/avatar.jpeg" alt="Darren">
-            
-              <p class="site-author-name" itemprop="name">Darren</p>
-              <p class="site-description motion-element" itemprop="description">运维工作中遇到的问题总结，新知识的记录。</p>
-          </div>
-
-          
-            <nav class="site-state motion-element">
-              
-                <div class="site-state-item site-state-posts">
-                
-                  <a href="/archives/">
-                
-                    <span class="site-state-item-count">39</span>
-                    <span class="site-state-item-name">posts</span>
-                  </a>
-                </div>
-              
-
-              
-                
-                
-                <div class="site-state-item site-state-categories">
-                  <a href="/categories/index.html">
-                    
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">14</span>
-                    <span class="site-state-item-name">categories</span>
-                  </a>
-                </div>
-              
-
-              
-                
-                
-                <div class="site-state-item site-state-tags">
-                  <a href="/tags/index.html">
-                    
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">34</span>
-                    <span class="site-state-item-name">tags</span>
-                  </a>
-                </div>
-              
-            </nav>
-          
-
-          
-
-          
-            <div class="links-of-author motion-element">
-              
-                <span class="links-of-author-item">
-                  
-                  
-                    
-                  
-                  
-                    
-                  
-                  <a href="https://github.com/zfqajd" title="GitHub &rarr; https://github.com/zfqajd" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
-                </span>
-              
-                <span class="links-of-author-item">
-                  
-                  
-                    
-                  
-                  
-                    
-                  
-                  <a href="mailto:zfqajd@gmail.com" title="E-Mail &rarr; mailto:zfqajd@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
-                </span>
-              
-            </div>
-          
-
-          
-
-          
-          
-
-          
-            
-          
-          
-
-        </div>
-      </div>
-
-      
-
-      
-
-    </div>
-  </aside>
-
-
-        
-      </div>
-    </main>
-
-    <footer id="footer" class="footer">
-      <div class="footer-inner">
-        <div class="copyright">  <a href="http://www.beian.miit.gov.cn" rel="noopener" target="_blank">闽ICP备15015461号-1 </a>&copy; 2017 – <span itemprop="copyrightYear">2020</span>
-  <span class="with-love" id="animate">
-    <i class="fa fa-user"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">Darren</span>
-
-  
-
-  
-</div>
-
-
-
-
-
-
-
-
-
-        
-<div class="busuanzi-count">
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-  
-    <span class="post-meta-item-icon">
-      <i class="fa fa-user"></i>
-    </span>
-    <span class="site-uv" title="Total Visitors">
-      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
-    </span>
-  
-
-  
-    <span class="post-meta-divider">|</span>
-  
-
-  
-    <span class="post-meta-item-icon">
-      <i class="fa fa-eye"></i>
-    </span>
-    <span class="site-pv" title="Total Views">
-      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
-    </span>
-  
-</div>
-
-
-
-
-
-
-
-
-
-        
-      </div>
-    </footer>
-
-    
-      <div class="back-to-top">
-        <i class="fa fa-arrow-up"></i>
-        
-      </div>
-    
-
-    
-
-    
-
-    
-  </div>
-
-  
 
 <script>
-  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
-    window.Promise = null;
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
   }
 </script>
 
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Darren</p>
+  <div class="site-description" itemprop="description">运维工作中遇到的问题总结，新知识的记录。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">39</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Darren</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
 
 
 
@@ -918,142 +371,35 @@
 
 
 
+      </div>
+    </footer>
+  </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
 
 
 
   
-  <script src="/lib/jquery/index.js?v=2.1.3"></script>
-
-  
-  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
-
-  
-  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
-
-
-  
-
-
-  <script src="/js/src/utils.js?v=7.0.0"></script>
-
-  <script src="/js/src/motion.js?v=7.0.0"></script>
-
-
-
-  
-  
-
-
-  <script src="/js/src/affix.js?v=7.0.0"></script>
-
-  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
-
-
-
-  
-  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
-<script src="/js/src/post-details.js?v=7.0.0"></script>
-
-
-
-  
-
-
-  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
-
-
-
-  
-  
-
-<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
-
-
-
-<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
-
-<script>
-  var GUEST = ['nick', 'mail', 'link'];
-  var guest = 'nick,mail,link';
-  guest = guest.split(',').filter(function(item) {
-    return GUEST.indexOf(item) > -1;
-  });
-  new Valine({
-    el: '#comments',
-    verify: true,
-    notify: true,
-    appId: 'nX56xwqanaB776cO2XaRfICK-gzGzoHsz',
-    appKey: 'NQSiiODA5jdKz0MUTaxRcdm8',
-    placeholder: 'o( =•ω•= )m客官别走！我们坐下来好好聊聊～～～',
-    avatar: 'mm',
-    meta: guest,
-    pageSize: '10' || 10,
-    visitor: false
-  });
-</script>
-
-
-
-
-  
-
-
-  
 
 
 
 
 
-  
-
-  
-
-  
-  <script>
-    (function(){
-      var bp = document.createElement('script');
-      var curProtocol = window.location.protocol.split(':')[0];
-      if (curProtocol === 'https') {
-        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
-      }
-      else {
-        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
-      }
-      var s = document.getElementsByTagName("script")[0];
-      s.parentNode.insertBefore(bp, s);
-    })();
-  </script>
 
 
-  
 
-  
 
-  
 
-  
 
-  
 
-  
 
-  
 
-  
 
   
 
